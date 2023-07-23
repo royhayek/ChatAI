@@ -25,7 +25,7 @@ export default makeStyles = theme =>
       borderRadius: 6,
       marginVertical: 8,
       marginHorizontal: 14,
-      backgroundColor: theme.dark ? theme.colors.background : 'white',
+      backgroundColor: theme.dark ? theme.colors.backdrop : 'white',
       shadowColor: theme.colors.shadow,
       shadowOpacity: theme.dark ? 0.6 : 0,
       shadowRadius: 3,

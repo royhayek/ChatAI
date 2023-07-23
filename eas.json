@@ -1,0 +1,19 @@
+{
+  "cli": {
+    "version": ">= 0.54.1"
+  },
+  "build": {
+    "development": {
+      "channel": "dev"
+    },
+    "beta": {
+      "channel": "beta"
+    },
+    "prod": {
+      "channel": "prod"
+    }
+  },
+  "submit": {
+    "prod": {}
+  }
+}

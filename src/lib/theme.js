@@ -5,7 +5,10 @@ export const lightTheme = {
   colors: {
     ...DefaultTheme.colors,
     primary: 'tomato',
+    primaryLight: 'rgba(255, 99, 71, 0.2)',
     secondary: 'gray',
+    white: 'white',
+    background: '#F9F9F9',
   },
 };
 
@@ -14,6 +17,8 @@ export const darkTheme = {
   colors: {
     ...DarkTheme.colors,
     primary: 'tomato',
+    primaryLight: 'rgba(255, 99, 71, 0.2)',
     secondary: 'gray',
+    white: 'white',
   },
 };

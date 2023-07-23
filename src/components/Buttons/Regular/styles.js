@@ -1,11 +1,15 @@
-import React from 'react';
 import { StyleSheet } from 'react-native';
 
 export default makeStyles = theme =>
   StyleSheet.create({
     container: {
-      flex: 1,
+      height: 46,
+      marginTop: 20,
+      borderRadius: 8,
       justifyContent: 'center',
-      backgroundColor: theme.colors.background,
+    },
+    title: {
+      color: 'white',
+      fontWeight: 'bold',
     },
   });

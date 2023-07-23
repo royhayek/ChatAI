@@ -1,0 +1,40 @@
+{
+  "ar": {
+    "common": {
+      "continue": "المتابعة"
+    },
+    "navigation": {
+      "chat": "المحادثة",
+      "history": "السجل",
+      "categories": "التصنيفات",
+      "settings": "الإعدادات",
+      "my_subscription": "اشتراكي"
+    },
+    "chat": {
+      "examples": "أمثلة",
+      "send_a_message": "ارسل رسالة"
+    },
+    "settings": {
+      "general": "عموما",
+      "language": "اللغة",
+      "theme": "النمط",
+      "subscription": "الاشتراك",
+      "manage_subscription": "إدارة الاشتراك",
+      "other": "أخرى",
+      "faq": "الأسئلة المتداولة",
+      "privacy_policy": "سياسة الخصوصية",
+      "about": "حول {{name}}",
+      "upgrade_to_plus": "قم بالترقية إلى Plus!",
+      "expanded_access": "توسيع الوصول إلى ميزات {{name}}",
+      "languages": {
+        "english": "الإنجليزية",
+        "arabic": "العربية",
+        "french": "الفرنسية"
+      }
+    },
+    "subscription": {
+      "unlock_access": "إفتح وصول غير محدود",
+      "cancel_anytime": "إلغاء الفواتير المتكررة في أي وقت"
+    }
+  }
+}
