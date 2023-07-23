@@ -2,7 +2,7 @@ import { createSlice, nanoid } from '@reduxjs/toolkit';
 
 const initialState = {
   language: 'en',
-  themeMode: 'light',
+  themeMode: 'dark',
 };
 
 export const appSlice = createSlice({

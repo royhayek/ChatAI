@@ -17,6 +17,6 @@ export default makeStyles = theme =>
       marginTop: 6,
       marginBottom: 8,
       marginHorizontal: 16,
-      backgroundColor: 'white',
+      backgroundColor: theme.dark ? theme.colors.backdrop : 'white',
     },
   });

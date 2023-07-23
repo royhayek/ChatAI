@@ -1,0 +1,40 @@
+{
+  "en": {
+    "common": {
+      "continue": "Continue"
+    },
+    "navigation": {
+      "chat": "Chat",
+      "history": "History",
+      "categories": "Assistants",
+      "settings": "Settings",
+      "my_subscription": "My Subscription"
+    },
+    "chat": {
+      "examples": "Examples",
+      "send_a_message": "Send a message"
+    },
+    "settings": {
+      "general": "General",
+      "language": "Language",
+      "theme": "Theme",
+      "subscription": "Subscription",
+      "manage_subscription": "Manage subscription",
+      "other": "Other",
+      "faq": "Frequently Asked Questions",
+      "privacy_policy": "Privacy Policy",
+      "about": "About {{name}}",
+      "upgrade_to_plus": "Upgrade to Plus!",
+      "expanded_access": "Extended access to {{name}} features",
+      "languages": {
+        "english": "English",
+        "arabic": "Arabic",
+        "french": "French"
+      }
+    },
+    "subscription": {
+      "unlock_access": "Unlock Unlimited Access",
+      "cancel_anytime": "Cancel recurring billing anytime"
+    }
+  }
+}

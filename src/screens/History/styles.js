@@ -5,11 +5,17 @@ export default makeStyles = theme =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16,
       backgroundColor: theme.colors.background,
     },
-    text: {
+    listContent: {
+      padding: 16,
+    },
+    content: {
       flex: 1,
-      marginLeft: 8,
+      marginStart: 12,
+    },
+    date: {
+      marginTop: 5,
+      color: theme.colors.secondary,
     },
   });

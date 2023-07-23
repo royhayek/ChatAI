@@ -1,3 +1,4 @@
+import { isRTL } from '../../config/i18n';
 import { StyleSheet } from 'react-native';
 
 export default makeStyles = theme =>
@@ -31,6 +32,10 @@ export default makeStyles = theme =>
       color: theme.dark ? 'white' : 'black',
       marginEnd: 15,
     },
+    arrowIcon: {
+      marginStart: 3,
+      transform: isRTL ? [{ rotateY: '180deg' }] : [],
+    },
     upgradeContainer: {
       padding: 20,
       borderRadius: 12,
@@ -48,5 +53,32 @@ export default makeStyles = theme =>
     upgradeDesc: {
       marginTop: 5,
       color: 'white',
+    },
+    modalContainer: {
+      margin: 24,
+      shadowOpacity: 0,
+      borderRadius: 8,
+      backgroundColor: theme.colors.background,
+    },
+    modalHeader: {
+      padding: 16,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    modalHeaderTitle: {
+      fontWeight: 'bold',
+    },
+    modalContent: {
+      padding: 16,
+    },
+    planTitle: {
+      color: theme.colors.secondary,
+      marginBottom: 10,
+      fontWeight: 'bold',
+    },
+    upgradeBtn: {
+      height: 46,
+      justifyContent: 'center',
+      borderRadius: 8,
     },
   });
