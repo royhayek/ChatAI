@@ -3,7 +3,8 @@ import { FlatList, TouchableOpacity, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import _ from 'lodash';
 import { Ionicons } from '@expo/vector-icons';
-import { deleteConversation, getConversations } from 'app/src/data/localdb';
+import { Octicons } from '@expo/vector-icons';
+import { deleteAllConversations, deleteConversation, getConversations } from 'app/src/data/localdb';
 import makeStyles from './styles';
 
 const HistoryScreen = ({ navigation }) => {
@@ -23,6 +24,23 @@ const HistoryScreen = ({ navigation }) => {
     await deleteConversation(id).then(() => console.debug('History Deleted Successfully'));
     refreshConversations();
   }, []);
+
+  const handleDeleteAllHistory = useCallback(async id => {
+    await deleteAllConversations().then(() => console.debug('History Deleted Successfully'));
+    refreshConversations();
+  }, []);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          size={22}
+          onPress={handleDeleteAllHistory}
+          icon={props => <Octicons name="trash" size={22} color={theme.dark ? 'white' : 'black'} />}
+        />
+      ),
+    });
+  }, [navigation]);
 
   useEffect(() => {
     refreshConversations();

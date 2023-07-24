@@ -1,18 +1,32 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React, { useCallback, useEffect, useState } from 'react';
+import { Divider, IconButton, TextInput, useTheme } from 'react-native-paper';
 import { Keyboard, View } from 'react-native';
-import { Divider, TextInput, useTheme } from 'react-native-paper';
 import EventSource from 'react-native-sse';
 import _ from 'lodash';
-import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENTS ------------------------ //
+// ------------------------------------------------------------ //
 import Conversation from './components/Conversation';
+import { Octicons } from '@expo/vector-icons';
 import Intro from './components/Intro';
-import { API_KEY } from '@env';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
+import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
 import { t } from '../../config/i18n';
 import makeStyles from './styles';
-
+import { API_KEY } from '@env';
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
 const _t = (key, options) => t(`chat.${key}`, options);
 
-const ChatScreen = ({ route }) => {
+const ChatScreen = ({ route, navigation }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
 
@@ -20,6 +34,7 @@ const ChatScreen = ({ route }) => {
   const [value, setValue] = useState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMsgs, setLoadingMsgs] = useState(false);
 
   const apiMessages = _.reduce(
     messages,
@@ -28,18 +43,31 @@ const ChatScreen = ({ route }) => {
     },
     [],
   );
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
-  useEffect(() => {
-    currentConversation && getMessagesByConversation(currentConversation).then(m => setMessages(m));
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
+  const handleNewConversation = useCallback(() => {
+    setCurrentConversation(null);
+    setMessages([]);
+    setValue(null);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Chat' }],
+    });
+  }, [navigation]);
+
+  console.debug('navigation', route.params);
+
+  const handleValueChange = useCallback(text => setValue(text), []);
+
+  const refreshMessages = useCallback(() => {
+    setLoadingMsgs(true);
+    getMessagesByConversation(currentConversation)
+      .then(m => setMessages(m))
+      .finally(() => setLoadingMsgs(false));
   }, [currentConversation]);
-
-  useEffect(() => {
-    route?.params?.conversation && setCurrentConversation(route.params.conversation.id);
-  }, [route]);
-
-  const handleValueChange = useCallback(text => {
-    setValue(text);
-  }, []);
 
   const createConversation = async message => {
     const newConversation = {
@@ -89,7 +117,7 @@ const ChatScreen = ({ route }) => {
     // Parameters to pass to the API
     let data = {
       model: 'gpt-3.5-turbo',
-      messages: [...apiMessages, { content: value, role: 'user' }],
+      messages: [...apiMessages, { content: message, role: 'user' }],
       temperature: 0.66,
       top_p: 1.0,
       max_tokens: 1000,
@@ -131,8 +159,10 @@ const ChatScreen = ({ route }) => {
             // Update current conversation
             setCurrentConversation(conversationId);
 
+            // Stop the loading placeholder
             setLoading(false);
 
+            // Close event source to prevent memory leak
             es.close();
           } else {
             if (delta && delta.content) {
@@ -156,29 +186,59 @@ const ChatScreen = ({ route }) => {
           es.close();
         }
       } else if (event.type === 'error') {
-        console.error('Connection error:', event.message);
+        console.error('Event Source Connection error:', event.message);
       } else if (event.type === 'exception') {
-        console.error('Error:', event.message, event.error);
+        console.error('Event Source Error (Exception):', event.message, event.error);
       }
     };
 
-    // Add listener
+    // Add listeners
     es.addEventListener('open', listener);
     es.addEventListener('message', listener);
     es.addEventListener('error', listener);
 
     return () => {
+      // Remove listeners and close event source to prevent memory leak
       es.removeAllEventListeners();
       es.close();
     };
   };
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ------------------------ EFFECTS ------------------------ //
+  useEffect(() => {
+    currentConversation &&
+      navigation.setOptions({
+        headerRight: () => (
+          <IconButton
+            size={22}
+            onPress={handleNewConversation}
+            icon={props => <Octicons name="plus" size={22} color={theme.dark ? 'white' : 'black'} />}
+          />
+        ),
+      });
+  }, [navigation, currentConversation]);
+
+  useEffect(() => {
+    route?.params?.conversation && setCurrentConversation(route.params.conversation.id);
+  }, [route]);
+
+  useEffect(() => {
+    currentConversation && refreshMessages();
+  }, [currentConversation]);
+  // ----------------------- /EFFECTS ------------------------ //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   return (
     <View style={styles.container}>
       {_.isEmpty(messages) ? (
-        <Intro value={value} setValue={setValue} setData={setMessages} />
+        <Intro value={value} setValue={setValue} handleSubmit={handleSubmitPrompt} />
       ) : (
-        <Conversation data={messages} />
+        <Conversation data={messages} loading={loadingMsgs} />
       )}
       <Divider style={styles.divider} />
       <TextInput

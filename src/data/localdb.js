@@ -109,17 +109,17 @@ export const deleteConversation = id => {
 };
 
 // Delete all stored conversations
-export const deleteAllConversations = id => {
+export const deleteAllConversations = () => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `DELETE FROM conversations`,
         null,
         () => {
-          reject();
+          resolve();
         },
         () => {
-          resolve();
+          reject();
         },
       );
     });
