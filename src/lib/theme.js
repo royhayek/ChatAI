@@ -9,6 +9,7 @@ export const lightTheme = {
     secondary: 'gray',
     white: 'white',
     background: '#F9F9F9',
+    lightGray: '#E4E5EE'
   },
 };
 
@@ -20,5 +21,6 @@ export const darkTheme = {
     primaryLight: 'rgba(255, 99, 71, 0.2)',
     secondary: 'gray',
     white: 'white',
+    lightGray: '#E4E5EE'
   },
 };

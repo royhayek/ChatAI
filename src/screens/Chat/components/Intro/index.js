@@ -11,17 +11,17 @@ import { Examples } from 'app/src/config/constants';
 
 const _t = (key, options) => t(`chat.${key}`, options);
 
-const Intro = ({ setValue, setData }) => {
+const Intro = ({ setValue, handleSubmit }) => {
   const theme = useTheme();
   const styles = makeStyles(theme);
 
   const handleExamplePress = useCallback(
     e => {
-      // setValue(null);
-      // setData(cur => [...cur, e]);
+      setValue(null);
+      handleSubmit(e);
       Keyboard.dismiss();
     },
-    [setValue, setData],
+    [setValue, handleSubmit],
   );
 
   return (

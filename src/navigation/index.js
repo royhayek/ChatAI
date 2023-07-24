@@ -9,20 +9,13 @@ import HistoryScreen from '../screens/History';
 import ChatScreen from '../screens/Chat';
 import { t } from '../config/i18n';
 import InfoScreen from '../screens/Info';
-import { Octicons } from '@expo/vector-icons';
 import SubscriptionScreen from '../screens/Subscription';
 import BackButton from '../components/Buttons/Back';
-import { deleteAllConversations, getConversations } from '../data/localdb';
 
 const _t = key => t(`navigation.${key}`);
 
 const RootNavigation = () => {
   const theme = useTheme();
-
-  const handleDeleteHistory = useCallback(async () => {
-    await deleteAllConversations();
-    await getConversations();
-  }, []);
 
   const Tab = createBottomTabNavigator();
   const ChatStack = createNativeStackNavigator();
@@ -63,17 +56,7 @@ const RootNavigation = () => {
         <HistoryStack.Screen
           name="History"
           component={HistoryScreen}
-          options={{
-            title: _t('history'),
-            headerRight: props => (
-              <IconButton
-                size={22}
-                onPress={handleDeleteHistory}
-                icon={props => <Octicons name="trash" size={22} color={theme.dark ? 'white' : 'black'} />}
-              />
-            ),
-            ...screenOptions,
-          }}
+          options={{ title: _t('history'), ...screenOptions }}
         />
       </HistoryStack.Navigator>
     );
@@ -131,7 +114,11 @@ const RootNavigation = () => {
         tabBarInactiveTintColor: theme.colors.secondary,
       })}>
       <Tab.Screen name="ChatStack" component={ChatStackScreen} options={{ title: _t('chat') }} />
-      <Tab.Screen name="HistoryStack" component={HistoryStackScreen} options={{ title: _t('history') }} />
+      <Tab.Screen
+        name="HistoryStack"
+        component={HistoryStackScreen}
+        options={{ title: _t('history'), unmountOnBlur: true }}
+      />
       <Tab.Screen name="CategoriesStack" component={CategoriesStackScreen} options={{ title: _t('categories') }} />
       <Tab.Screen name="SettingsStack" component={SettingsStackScreen} options={{ title: _t('settings') }} />
     </Tab.Navigator>
