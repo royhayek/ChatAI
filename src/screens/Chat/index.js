@@ -1,40 +1,33 @@
-import _ from 'lodash';
-import { Keyboard, View } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
+import { Keyboard, View } from 'react-native';
 import { Divider, TextInput, useTheme } from 'react-native-paper';
-import {
-  addConversation,
-  addMessage,
-  getConversation,
-  getMessagesByConversation,
-  updateLocalAnswer,
-} from 'app/src/data/localdb';
+import EventSource from 'react-native-sse';
+import _ from 'lodash';
+import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
 import Conversation from './components/Conversation';
 import Intro from './components/Intro';
+import { API_KEY } from '@env';
 import { t } from '../../config/i18n';
 import makeStyles from './styles';
-import { generateResponse } from 'app/src/config/openAI';
-import useChatStream from '@magicul/react-chat-stream';
-import { API_KEY } from '@env';
-import EventSource from 'react-native-sse';
 
 const _t = (key, options) => t(`chat.${key}`, options);
-
-const DEFAULT_OPENAI_MODEL = {
-  name: 'Default (GPT-3.5)',
-  id: 'gpt-3.5-turbo',
-  available: true,
-};
 
 const ChatScreen = ({ route }) => {
   const theme = useTheme();
   const styles = makeStyles(theme);
 
   const [currentConversation, setCurrentConversation] = useState(route?.params?.conversation?.id ?? null);
-  const [storedValues, setStoredValues] = useState([]);
   const [value, setValue] = useState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const apiMessages = _.reduce(
+    messages,
+    (r, v) => {
+      return [...r, { content: v.question, role: 'user' }, { content: v.answer, role: 'system' }];
+    },
+    [],
+  );
 
   useEffect(() => {
     currentConversation && getMessagesByConversation(currentConversation).then(m => setMessages(m));
@@ -88,19 +81,15 @@ const ChatScreen = ({ route }) => {
 
     // Save inital message in local storage
     const messageId = await createMessage(newMessageModel);
-    setStoredValues(values => [...values, { content: message, role: 'user' }]);
 
     let newContent = '';
 
     let url = 'https://api.openai.com/v1/chat/completions';
 
-    const msgs = [...storedValues, { content: value, role: 'user' }];
-    console.debug('msgs', msgs);
-
     // Parameters to pass to the API
     let data = {
       model: 'gpt-3.5-turbo',
-      messages: [...storedValues, { content: value, role: 'user' }],
+      messages: [...apiMessages, { content: value, role: 'user' }],
       temperature: 0.66,
       top_p: 1.0,
       max_tokens: 1000,
@@ -122,7 +111,10 @@ const ChatScreen = ({ route }) => {
     // Listen the server until the last piece of text
     const listener = async event => {
       if (event.type === 'open') {
-        console.debug('Opened an SSE connection');
+        console.info('Opened an SSE connection');
+
+        // Clear the prompt
+        setValue('');
       } else if (event.type === 'message') {
         if (event.data !== '[DONE]') {
           // get every piece of text
@@ -136,13 +128,8 @@ const ChatScreen = ({ route }) => {
             // Update answer in local storage
             updateAnswer(newContent, messageId);
 
-            setStoredValues(values => [...values, { content: newContent, role: 'system' }]);
-
             // Update current conversation
             setCurrentConversation(conversationId);
-
-            // Clear the prompt
-            setValue('');
 
             setLoading(false);
 
@@ -189,7 +176,7 @@ const ChatScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       {_.isEmpty(messages) ? (
-        <Intro value={value} setValue={setValue} setData={setStoredValues} />
+        <Intro value={value} setValue={setValue} setData={setMessages} />
       ) : (
         <Conversation data={messages} />
       )}
