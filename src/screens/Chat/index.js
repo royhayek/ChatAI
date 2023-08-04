@@ -1,14 +1,17 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useEffect, useState } from 'react';
-import { Divider, IconButton, TextInput, useTheme } from 'react-native-paper';
-import { Keyboard, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { Ionicons } from '@expo/vector-icons';
 import EventSource from 'react-native-sse';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
+import { Keyboard, KeyboardAvoidingView, ScrollView, View } from 'react-native';
+import { Divider, FAB, IconButton, TextInput, useTheme } from 'react-native-paper';
+import CircularProgress from 'react-native-circular-progress-indicator';
 import Conversation from './components/Conversation';
 import { Octicons } from '@expo/vector-icons';
 import Intro from './components/Intro';
@@ -16,15 +19,26 @@ import Intro from './components/Intro';
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
 import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
-import { t } from '../../config/i18n';
+import { isRTL, t } from '../../config/i18n';
 import makeStyles from './styles';
 import { API_KEY } from '@env';
+import Usage from 'app/src/components/Usage';
+import RegularButton from 'app/src/components/Buttons/Regular';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLastSentDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
+import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
+
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
 const _t = (key, options) => t(`chat.${key}`, options);
 
 const ChatScreen = ({ route, navigation }) => {
+  const dispatch = useDispatch();
+  const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
+  const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
+
+  const messagesCount = useSelector(state => state.app.messagesCount);
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
@@ -35,6 +49,7 @@ const ChatScreen = ({ route, navigation }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
+  const [openUsageModal, setOpenUsageModal] = useState(false);
 
   const apiMessages = _.reduce(
     messages,
@@ -58,16 +73,14 @@ const ChatScreen = ({ route, navigation }) => {
     });
   }, [navigation]);
 
-  console.debug('navigation', route.params);
-
   const handleValueChange = useCallback(text => setValue(text), []);
 
   const refreshMessages = useCallback(() => {
     setLoadingMsgs(true);
     getMessagesByConversation(currentConversation)
-      .then(m => setMessages(m))
+      .then(m => !_.isEqual(m, messages) && setMessages(m))
       .finally(() => setLoadingMsgs(false));
-  }, [currentConversation]);
+  }, [messages, currentConversation]);
 
   const createConversation = async message => {
     const newConversation = {
@@ -85,12 +98,33 @@ const ChatScreen = ({ route, navigation }) => {
     return await addMessage(messageModel);
   };
 
+  // Function to update the message count and last sent date in storage and redux
+  const updateMessageCount = async () => {
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+      await SecureStore.setItemAsync('lastSentDate', today);
+      await SecureStore.setItemAsync('messageCount', (messagesCount + 1).toString());
+      updateMessagesCount(messagesCount + 1);
+      updateLastSentDate(today);
+    } catch (error) {
+      console.error('Error updating message count:', error);
+    }
+  };
+
   const handleSubmitPrompt = async message => {
+    Keyboard.dismiss();
+
+    if (messagesCount >= DAILY_USAGE_LIMIT) {
+      setOpenUsageModal(true);
+      return;
+    }
+
     setLoading(true);
     let conversationId = currentConversation ?? null;
 
     // Create a new conversation if it doesn't exist
-    const existingMessages = await getMessagesByConversation(currentConversation);
+    const existingMessages = currentConversation ? await getMessagesByConversation(currentConversation) : [];
     if (existingMessages.length === 0) {
       conversationId = await createConversation(message);
     }
@@ -103,7 +137,7 @@ const ChatScreen = ({ route, navigation }) => {
     };
 
     // Add the message to existing conversation
-    const currentMessages = await getMessagesByConversation(currentConversation);
+    const currentMessages = currentConversation ? await getMessagesByConversation(currentConversation) : [];
     currentMessages.push(newMessageModel);
     setMessages(currentMessages);
 
@@ -133,7 +167,7 @@ const ChatScreen = ({ route, navigation }) => {
       },
       method: 'POST',
       body: JSON.stringify(data),
-      pollingInterval: 25000,
+      pollingInterval: 5000,
     });
 
     // Listen the server until the last piece of text
@@ -143,6 +177,8 @@ const ChatScreen = ({ route, navigation }) => {
 
         // Clear the prompt
         setValue('');
+      } else if (event.type === 'close') {
+        console.info('Closed SSE connection');
       } else if (event.type === 'message') {
         if (event.data !== '[DONE]') {
           // get every piece of text
@@ -161,6 +197,9 @@ const ChatScreen = ({ route, navigation }) => {
 
             // Stop the loading placeholder
             setLoading(false);
+
+            // Update the message count and last sent date in storage
+            updateMessageCount();
 
             // Close event source to prevent memory leak
             es.close();
@@ -195,6 +234,7 @@ const ChatScreen = ({ route, navigation }) => {
     // Add listeners
     es.addEventListener('open', listener);
     es.addEventListener('message', listener);
+    es.addEventListener('close', listener);
     es.addEventListener('error', listener);
 
     return () => {
@@ -209,17 +249,18 @@ const ChatScreen = ({ route, navigation }) => {
   // --------------------------------------------------------- //
   // ------------------------ EFFECTS ------------------------ //
   useEffect(() => {
-    currentConversation &&
-      navigation.setOptions({
-        headerRight: () => (
+    navigation.setOptions({
+      headerLeft: () => <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
+      headerRight: () =>
+        currentConversation && (
           <IconButton
             size={22}
             onPress={handleNewConversation}
             icon={props => <Octicons name="plus" size={22} color={theme.dark ? 'white' : 'black'} />}
           />
         ),
-      });
-  }, [navigation, currentConversation]);
+    });
+  }, [openUsageModal, navigation, currentConversation, setOpenUsageModal]);
 
   useEffect(() => {
     route?.params?.conversation && setCurrentConversation(route.params.conversation.id);
@@ -234,37 +275,52 @@ const ChatScreen = ({ route, navigation }) => {
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
   return (
-    <View style={styles.container}>
-      {_.isEmpty(messages) ? (
-        <Intro value={value} setValue={setValue} handleSubmit={handleSubmitPrompt} />
-      ) : (
-        <Conversation data={messages} loading={loadingMsgs} />
-      )}
+    <View style={styles.container} onPress={() => Keyboard.dismiss()}>
+      <View style={{ flex: 1 }}>
+        {_.isEmpty(messages) ? (
+          <Intro value={value} setValue={setValue} handleSubmit={handleSubmitPrompt} />
+        ) : (
+          <Conversation data={messages} loading={loadingMsgs} />
+        )}
+
+        {/* {loading && (
+          <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, alignItems: 'center' }}>
+            <RegularButton
+              title="Stop"
+              leftIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />}
+              onPress={() => null}
+            />
+          </View>
+        )} */}
+      </View>
       <Divider style={styles.divider} />
-      <TextInput
-        multiline
-        value={value}
-        mode="outlined"
-        style={styles.input}
-        verticalAlign="middle"
-        outlineColor="transparent"
-        onSubmitEditing={Keyboard.dismiss}
-        onChangeText={handleValueChange}
-        activeOutlineColor="transparent"
-        returnKeyType="send"
-        placeholder={_t('send_a_message')}
-        underlineStyle={{ display: 'none' }}
-        placeholderTextColor={theme.colors.secondary}
-        right={
-          <TextInput.Icon
-            centered
-            icon="send"
-            disabled={_.isEmpty(value)}
-            iconColor={theme.colors.secondary}
-            onPress={() => handleSubmitPrompt(value)}
-          />
-        }
-      />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : 'height'} keyboardVerticalOffset={100}>
+        <TextInput
+          multiline
+          value={value}
+          mode="outlined"
+          style={styles.input}
+          returnKeyType="send"
+          verticalAlign="middle"
+          outlineColor="transparent"
+          onSubmitEditing={Keyboard.dismiss}
+          onChangeText={handleValueChange}
+          activeOutlineColor="transparent"
+          placeholder={_t('send_a_message')}
+          underlineStyle={{ display: 'none' }}
+          placeholderTextColor={theme.colors.secondary}
+          right={
+            <TextInput.Icon
+              centered
+              icon="send"
+              disabled={_.isEmpty(value)}
+              iconColor={theme.colors.secondary}
+              onPress={() => handleSubmitPrompt(value)}
+              style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
+            />
+          }
+        />
+      </KeyboardAvoidingView>
     </View>
   );
 };

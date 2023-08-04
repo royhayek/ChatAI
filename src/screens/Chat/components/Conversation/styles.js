@@ -1,30 +1,40 @@
+import { isRTL } from 'app/src/config/i18n';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
 export default makeStyles = theme =>
   StyleSheet.create({
     question: {
-      alignSelf: 'flex-end',
-      marginVertical: 7,
-      marginHorizontal: 14,
-      backgroundColor: '#2C2C2C',
-      borderTopStartRadius: 18,
-      borderTopEndRadius: 18,
-      borderBottomStartRadius: 18,
-      borderBottomEndRadius: 2,
       padding: 15,
+      marginVertical: 7,
+      alignSelf: 'flex-end',
+      marginHorizontal: 14,
+      borderTopEndRadius: 18,
+      borderTopStartRadius: 18,
+      borderBottomEndRadius: 2,
+      borderBottomStartRadius: 18,
+      backgroundColor: '#2C2C2C',
     },
     answer: {
-      marginHorizontal: 14,
-      backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.lightGray,
-      borderTopStartRadius: 2,
-      borderTopEndRadius: 18,
-      borderBottomStartRadius: 18,
-      borderBottomEndRadius: 18,
+      // alignSelf: 'flex-start',
       marginVertical: 7,
+      marginHorizontal: 14,
       paddingVertical: 8,
       paddingHorizontal: 15,
+      borderTopStartRadius: 2,
+      borderTopEndRadius: 18,
+      borderBottomEndRadius: 18,
+      borderBottomStartRadius: 18,
+      backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.lightGray,
     },
+    fab: theme => ({
+      right: 24,
+      bottom: 16,
+      opacity: 0.4,
+      borderRadius: 100,
+      position: 'absolute',
+      backgroundColor: theme.dark ? '#000000' : '#FFFFFF',
+    }),
   });
 
 export const markdownStyles = theme => ({
@@ -46,8 +56,8 @@ export const markdownStyles = theme => ({
   },
   codespan: {
     ...theme.fonts.labelLarge,
-    color: theme.dark ? 'white' : 'black',
     fontWeight: 'bold',
+    color: theme.dark ? 'white' : 'black',
     backgroundColor: theme.dark ? theme.colors.secondaryContainer : 'transparent',
   },
   link: {
@@ -56,10 +66,10 @@ export const markdownStyles = theme => ({
   code: {
     ...theme.fonts.labelLarge,
     flex: 1,
-    backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
     padding: 16,
-    marginVertical: 5,
     borderRadius: 8,
+    marginVertical: 5,
+    backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
   },
   table: {
     flex: 1,
@@ -69,8 +79,8 @@ export const markdownStyles = theme => ({
   },
   li: {
     ...theme.fonts.labelLarge,
-    color: theme.colors.secondary,
     flex: 1,
     fontWeight: 'bold',
+    color: theme.colors.secondary,
   },
 });

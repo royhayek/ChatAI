@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { Button, Divider, Menu, Modal, Portal, Switch, Text, useTheme } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLanguage, setThemeMode } from '../../redux/slices/appSlice';
-import i18n, { changeLanguage, t } from '../../config/i18n';
+import i18n, { changeLanguage, isRTL, t } from '../../config/i18n';
 import { Fontisto } from '@expo/vector-icons';
 import makeStyles from './styles';
 import { appName } from 'app/src/helpers';
@@ -57,7 +57,12 @@ const SettingsScreen = ({ navigation }) => {
         </Text>
         <Text style={styles.upgradeDesc}> {_t('expanded_access', { name: appName })}</Text>
       </View>
-      <Ionicons name="ios-chevron-forward-sharp" size={28} color="white" />
+      <Ionicons
+        name="ios-chevron-forward-sharp"
+        size={28}
+        color="white"
+        style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
+      />
     </TouchableOpacity>
   );
 
@@ -112,12 +117,12 @@ const SettingsScreen = ({ navigation }) => {
     {
       title: _t('other'),
       items: [
-        {
-          key: 'faq',
-          title: _t('faq'),
-          icon: 'ios-help-circle-outline',
-          onPress: () => navigateToInfo('faq'),
-        },
+        // {
+        //   key: 'faq',
+        //   title: _t('faq'),
+        //   icon: 'ios-help-circle-outline',
+        //   onPress: () => navigateToInfo('faq'),
+        // },
         {
           key: 'privacy_policy',
           title: _t('privacy_policy'),
@@ -125,17 +130,21 @@ const SettingsScreen = ({ navigation }) => {
           onPress: () => navigateToInfo('privacy_policy'),
         },
         {
-          key: 'about',
-          title: _t('about', { name: appName }),
+          key: 'terms',
+          title: _t('terms'),
           icon: 'ios-information-circle-outline',
-          onPress: () => navigateToInfo('about', { name: appName }),
+          onPress: () => navigateToInfo('terms', { name: appName }),
         },
       ],
     },
   ];
 
   const renderContent = () => (
-    <View style={styles.content}>
+    <ScrollView
+      style={styles.content}
+      contentContainerStyle={{ paddingBottom: 30 }}
+      overScrollMode="never"
+      showsVerticalScrollIndicator={false}>
       {_.map(sections(), ({ title, items }) => (
         <View key={title}>
           <Text variant="titleSmall" style={styles.title}>
@@ -188,73 +197,13 @@ const SettingsScreen = ({ navigation }) => {
           </View>
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
-
-  // const renderUpgradeModal = () => (
-  //   <Portal>
-  //     <Modal visible={openUpgradeModal} onDismiss={toggleUpgradeModal} contentContainerStyle={styles.modalContainer}>
-  //       <View style={styles.modalHeader}>
-  //         <Text variant="titleLarge" style={styles.modalHeaderTitle}>
-  //           ChatGPT Plus
-  //         </Text>
-  //         <TouchableOpacity onPress={toggleUpgradeModal}>
-  //           <Ionicons name="ios-close" size={24} color={theme.colors.secondary} />
-  //         </TouchableOpacity>
-  //       </View>
-  //       <Divider />
-  //       <View style={styles.modalContent}>
-  //         <View style={{ marginTop: 5, marginHorizontal: 8 }}>
-  //           <View style={{ flexDirection: 'row', marginVertical: 5 }}>
-  //             <Fontisto name="checkbox-active" size={15} color={theme.colors.primary} style={{ marginEnd: 5 }} />
-  //             <Text variant="bodySmall">Unlimited messages</Text>
-  //           </View>
-  //           <View style={{ flexDirection: 'row', marginVertical: 5 }}>
-  //             <Fontisto name="checkbox-active" size={15} color={theme.colors.primary} style={{ marginEnd: 5 }} />
-  //             <Text variant="bodySmall">No Advertisements</Text>
-  //           </View>
-  //           <View style={{ flexDirection: 'row', marginVertical: 5 }}>
-  //             <Fontisto name="checkbox-active" size={15} color={theme.colors.primary} style={{ marginEnd: 5 }} />
-  //             <Text variant="bodySmall">Powered by ChatGPT 4</Text>
-  //           </View>
-  //         </View>
-
-  //         <View
-  //           style={{
-  //             flexDirection: 'row',
-  //             marginTop: 20,
-  //             marginBottom: 10,
-  //             gap: 8,
-  //           }}>
-  //           {_.map(PLANS, ({ id, title, price }) => (
-  //             <TouchableOpacity
-  //               key={id}
-  //               onPress={() => null}
-  //               style={{ flex: 1, borderWidth: 1, borderRadius: 8, borderColor: theme.colors.primary, padding: 10 }}>
-  //               <Text
-  //                 variant="bodyMedium"
-  //                 style={{ color: theme.colors.primary, fontWeight: 'bold', textAlign: 'center' }}>
-  //                 {title}
-  //               </Text>
-  //               <Text variant="labelLarge" style={{ textAlign: 'center' }}>
-  //                 $ {parseInt(price).toFixed(2)}
-  //               </Text>
-  //             </TouchableOpacity>
-  //           ))}
-  //         </View>
-  //         <Text variant="bodySmall" style={{ textAlign: 'center' }}>
-  //           Cancel recurring billing anytime
-  //         </Text>
-  //       </View>
-  //     </Modal>
-  //   </Portal>
-  // );
 
   return (
     <View style={styles.container}>
-      {renderContent()}
       {renderUpgradeButton()}
-      {/* {renderUpgradeModal()} */}
+      {renderContent()}
     </View>
   );
 };

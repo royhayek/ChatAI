@@ -32,27 +32,37 @@ const RootNavigation = () => {
 
   const ChatStackScreen = () => {
     return (
-      <ChatStack.Navigator>
+      <ChatStack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
         <ChatStack.Screen name="Chat" component={ChatScreen} options={{ title: _t('chat'), ...screenOptions }} />
+        <ChatStack.Screen
+          name="Subscription"
+          component={SubscriptionScreen}
+          options={{
+            title: '',
+            headerTitleAlign: 'center',
+            ...screenOptions,
+          }}
+        />
       </ChatStack.Navigator>
     );
   };
 
   const CategoriesStackScreen = () => {
     return (
-      <CategoriesStack.Navigator>
+      <CategoriesStack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
         <CategoriesStack.Screen
           name="Categories"
           component={CategoriesScreen}
           options={{ title: _t('categories'), ...screenOptions }}
         />
+        <ChatStack.Screen name="Chat" component={ChatScreen} options={{ title: _t('chat'), ...screenOptions }} />
       </CategoriesStack.Navigator>
     );
   };
 
   const HistoryStackScreen = () => {
     return (
-      <HistoryStack.Navigator>
+      <HistoryStack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
         <HistoryStack.Screen
           name="History"
           component={HistoryScreen}
@@ -64,7 +74,7 @@ const RootNavigation = () => {
 
   const SettingsStackScreen = () => {
     return (
-      <SettingsStack.Navigator>
+      <SettingsStack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
         <SettingsStack.Screen
           name="Settings"
           component={SettingsScreen}
@@ -91,8 +101,12 @@ const RootNavigation = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarStyle: {
+          elevation: 0,
+          borderTopWidth: 0,
           backgroundColor: theme.colors.background,
         },
+        tabBarHideOnKeyboard: true,
+        tabBarAllowFontScaling: true,
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
