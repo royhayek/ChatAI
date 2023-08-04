@@ -1,20 +1,34 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import _ from 'lodash';
+import CustomBottomSheet from 'app/src/components/BottomSheet';
 import { Ionicons } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
 import { deleteAllConversations, deleteConversation, getConversations } from 'app/src/data/localdb';
 import makeStyles from './styles';
+import RegularButton from 'app/src/components/Buttons/Regular';
+import { t } from 'app/src/config/i18n';
+
+const _t = (key, options) => t(`history.${key}`, options);
 
 const HistoryScreen = ({ navigation }) => {
   const theme = useTheme();
   const styles = makeStyles(theme);
+  const [refreshing, setRefreshing] = useState(false);
   const [conversations, setConversations] = useState([]);
 
+  const bottomSheetRef = useRef();
+  const snapPoints = ['25%'];
+
   const refreshConversations = useCallback(() => {
-    getConversations().then(conversations => setConversations(conversations));
+    getConversations().then(conversations => {
+      setConversations(conversations);
+      setRefreshing(false);
+    });
   }, []);
+
+  const handleSheetClose = useCallback(() => bottomSheetRef.current.close(), []);
 
   const handleTextPress = useCallback(conversation => {
     navigation.navigate('Chat', { conversation });
@@ -25,18 +39,21 @@ const HistoryScreen = ({ navigation }) => {
     refreshConversations();
   }, []);
 
-  const handleDeleteAllHistory = useCallback(async id => {
+  const handleDeletePress = useCallback(() => bottomSheetRef.current.expand(), []);
+
+  const handleDeleteAllHistory = useCallback(async () => {
     await deleteAllConversations().then(() => console.debug('History Deleted Successfully'));
     refreshConversations();
-  }, []);
+    handleSheetClose();
+  });
 
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <IconButton
           size={22}
-          onPress={handleDeleteAllHistory}
-          icon={props => <Octicons name="trash" size={22} color={theme.dark ? 'white' : 'black'} />}
+          onPress={handleDeletePress}
+          icon={() => <Octicons name="trash" size={22} color={theme.dark ? 'white' : 'black'} />}
         />
       ),
     });
@@ -51,6 +68,16 @@ const HistoryScreen = ({ navigation }) => {
       <FlatList
         data={conversations}
         key={item => item.id}
+        refreshing={refreshing}
+        refreshControl={
+          <RefreshControl
+            // colors={theme.dark ? [theme.colors.white, theme.colors.black] : [theme.colors.black]}
+            tintColor={theme.dark ? theme.colors.white : theme.colors.black}
+            refreshing={refreshing}
+            onRefresh={refreshConversations}
+          />
+        }
+        // onRefresh={refreshConversations}
         contentContainerStyle={styles.listContent}
         renderItem={({ item, index }) => (
           <>
@@ -85,6 +112,24 @@ const HistoryScreen = ({ navigation }) => {
           </>
         )}
       />
+
+      <CustomBottomSheet sheetRef={bottomSheetRef} snapPoints={snapPoints} onClose={handleSheetClose}>
+        <Text variant="bodyLarge" style={styles.modalTitle}>
+          {_t('delete_your_history')}
+        </Text>
+        <View style={styles.modalButtons}>
+          <RegularButton
+            title={_t('delete')}
+            leftIcon={<Octicons name="trash" size={18} color={theme.colors.white} />}
+            onPress={handleDeleteAllHistory}
+          />
+          <RegularButton
+            title={_t('cancel')}
+            leftIcon={<Ionicons name="close" size={18} color={theme.colors.white} />}
+            onPress={handleSheetClose}
+          />
+        </View>
+      </CustomBottomSheet>
     </View>
   );
 };

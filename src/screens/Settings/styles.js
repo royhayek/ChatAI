@@ -39,7 +39,7 @@ export default makeStyles = theme =>
     upgradeContainer: {
       padding: 20,
       borderRadius: 12,
-      marginVertical: 20,
+      marginVertical: 5,
       flexDirection: 'row',
       backgroundColor: theme.colors.primary,
       marginHorizontal: 16,

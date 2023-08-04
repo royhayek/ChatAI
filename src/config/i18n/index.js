@@ -9,6 +9,7 @@ import { I18n } from 'i18n-js';
 import { store } from '../../redux/store';
 import { setLanguage } from '../../redux/slices/appSlice';
 import { wait } from '../../helpers';
+import RNRestart from 'react-native-restart';
 
 const i18n = new I18n();
 i18n.store(en);
@@ -21,14 +22,17 @@ export const changeLanguage = lng => {
 
   wait(10).then(() => {
     const isRTL = _.isEqual(lng, 'ar');
+    console.debug('isRTL', isRTL);
     I18nManager.forceRTL(isRTL);
     I18nManager.allowRTL(isRTL);
 
-    // if (__DEV__) DevSettings.reload();
-    // else Updates.reloadAsync();
+    if (__DEV__) DevSettings.reload();
+    else Updates.reloadAsync();
   });
 };
 
-export const isRTL = i18n.isRTL;
+export const changeLocale = locale => (i18n.locale = locale);
+
+export const isRTL = I18nManager.isRTL;
 
 export const t = (key, options) => i18n.t(key, options);

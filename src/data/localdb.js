@@ -45,7 +45,7 @@ export const addConversation = conversation => {
           resolve(res?.insertId);
         },
         (_, err) => {
-          console.debug('[addConversation] :: ', err);
+          // console.debug('[addConversation] :: ', err);
           reject();
         },
       );
@@ -133,9 +133,10 @@ export const getMessagesByConversation = id => {
         `SELECT * FROM messages WHERE conversationId = ?;`,
         [id],
         (_, { rows: { _array } }) => {
+          console.debug('[getMessagesByConversation] :: _array', _array)
           resolve(_array);
         },
-        (_, error) => {
+        (_, err) => {
           console.debug('[getMessagesByConversation] :: ', err);
           reject();
         },

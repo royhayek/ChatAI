@@ -2,8 +2,9 @@ import React from 'react';
 import PT from 'prop-types';
 import { useNavigation } from '@react-navigation/native';
 import { IconButton, useTheme } from 'react-native-paper';
-import Icon from '../../Icon';
 import makeStyles from './styles';
+import LeftChevron from 'app/src/lib/icons/LeftChevron';
+import { isRTL } from 'app/src/config/i18n';
 
 const BackButton = ({ title, onPress, ...props }) => {
   const theme = useTheme();
@@ -16,7 +17,10 @@ const BackButton = ({ title, onPress, ...props }) => {
       style={styles.container}
       onPress={() => navigation.goBack()}
       icon={props => (
-        <Icon name="leftChevron" {...props} size={15} iconStyle={{ color: theme.dark ? 'white' : 'black' }} />
+        <LeftChevron
+          color={theme.dark ? 'white' : 'black'}
+          style={{ transform: [{ rotateY: isRTL ? '180deg' : '0deg' }] }}
+        />
       )}
     />
   );

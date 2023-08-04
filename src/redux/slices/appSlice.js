@@ -3,6 +3,8 @@ import { createSlice, nanoid } from '@reduxjs/toolkit';
 const initialState = {
   language: 'en',
   themeMode: 'dark',
+  messagesCount: 0,
+  lastSentDate: null,
 };
 
 export const appSlice = createSlice({
@@ -15,9 +17,15 @@ export const appSlice = createSlice({
     setThemeMode: (state, action) => {
       state.themeMode = action.payload;
     },
+    setMessagesCount: (state, action) => {
+      state.messagesCount = action.payload;
+    },
+    setLastSentDate: (state, action) => {
+      state.lastSentDate = action.payload;
+    },
   },
 });
 
-export const { setLanguage, setThemeMode } = appSlice.actions;
+export const { setLanguage, setThemeMode, setMessagesCount, setLastSentDate } = appSlice.actions;
 
 export default appSlice.reducer;

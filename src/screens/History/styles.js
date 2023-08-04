@@ -18,4 +18,15 @@ export default makeStyles = theme =>
       marginTop: 5,
       color: theme.colors.secondary,
     },
+    modalTitle: {
+      textAlign: 'center',
+      fontWeight: 'bold',
+      marginVertical: 10,
+      marginHorizontal: 20,
+    },
+    modalButtons: {
+      gap: 20,
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
   });

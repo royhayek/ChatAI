@@ -3,7 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 
-export const appName = Constants.manifest.name;
+export const appName = Constants.manifest?.name;
 
 export const wait = timeout => {
   return new Promise(resolve => {
@@ -35,7 +35,7 @@ export const registerForPushNotificationsAsync = async () => {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync({ projectId: '2850dfa7-a5c7-4cc0-a06c-be90c8c6d9bc' })).data;
-    const fcmToken = (await Notifications.getDevicePushTokenAsync()).data
+    const fcmToken = (await Notifications.getDevicePushTokenAsync()).data;
     console.info('[expoToken] :: ', token);
     console.info('[fcmToken] :: ', fcmToken);
   } else {
@@ -43,4 +43,9 @@ export const registerForPushNotificationsAsync = async () => {
   }
 
   return token;
+};
+
+export const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
+  const paddingToBottom = 20;
+  return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
 };

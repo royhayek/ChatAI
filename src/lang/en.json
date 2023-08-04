@@ -14,6 +14,11 @@
       "examples": "Examples",
       "send_a_message": "Send a message"
     },
+    "history": {
+      "delete_your_history": "Are you sure you want to delete your history?",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
     "settings": {
       "general": "General",
       "language": "Language",
@@ -23,7 +28,7 @@
       "other": "Other",
       "faq": "Frequently Asked Questions",
       "privacy_policy": "Privacy Policy",
-      "about": "About {{name}}",
+      "terms": "Terms & Conditions",
       "upgrade_to_plus": "Upgrade to Plus!",
       "expanded_access": "Extended access to {{name}} features",
       "languages": {
@@ -33,8 +38,20 @@
       }
     },
     "subscription": {
+      "powered_by_chatgpt": "Powered by ChatGPT 4",
+      "accurate_and_detailed": "More accurate & details replies",
+      "no_limits": "No Limits",
+      "unlimited_chats": "Unlimited Chats",
+      "no_ads": "No Ads",
+      "enjoy_without_ads": "Enjoy {{name}} without any ads",
       "unlock_access": "Unlock Unlimited Access",
       "cancel_anytime": "Cancel recurring billing anytime"
+    },
+    "usage": {
+      "daily_free_usage": "Daily Free Usage",
+      "free_messages_daily": "Chat with {{name}} for free! {{number}} messages daily",
+      "get_unlimited": "Get Unlimited with AI Plus",
+      "hit_limit": "It looks like you've hit your limit for today! Come back tomorrow for more or upgrade to enjoy unlimited chat!"
     }
   }
 }

@@ -1,8 +1,9 @@
+export const DAILY_USAGE_LIMIT = 5;
+
 export const REWARDED_AD_UNIT_ID = 'Place your rewarded ad unit id here';
 
-export const PRIVACY_POLICY = 'Place your privacy policy link here';
-export const ABOUT = 'Place your About link here';
-export const HELP = 'Place your help link here';
+export const PRIVACY_POLICY = 'https://code-blow.com/chatAi/privacy_policy.html'; // Place your privacy policy link here
+export const TERMS_AND_CONDITIONS = 'https://code-blow.com/chatAi/terms.html'; //  Place your privacy policy link here
 
 // Android app subscription app id (from google console)
 export const PRODUCT_ID = 'chatai_pro';

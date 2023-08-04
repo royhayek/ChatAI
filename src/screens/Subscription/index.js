@@ -1,21 +1,45 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import _ from 'lodash';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import RegularButton from 'app/src/components/Buttons/Regular';
-import Icon from '../../components/Icon';
 import { BENEFITS, PLANS } from './config';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
+import LeftChevron from 'app/src/lib/icons/LeftChevron';
+import { getProductsAsync } from 'expo-in-app-purchases';
 
 const _t = (key, options) => t(`subscription.${key}`, options);
 
 const SubscriptionScreen = () => {
   const theme = useTheme();
   const styles = makeStyles(theme);
+  const [results, setResults] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(PLANS[0]);
 
   const handleContinuePress = useCallback(() => {}, []);
+
+  const fetchSubscriptions = useCallback(async () => {
+    const items = Platform.select({
+      ios: [
+        'dev.expo.products.premium',
+        'dev.expo.payments.updates',
+        'dev.expo.payments.adfree',
+        'dev.expo.payments.gold',
+      ],
+      android: ['chatai_pro', 'chatai_pro_monthly', 'chatai-pro-monthly'],
+    });
+
+    const { responseCode, results } = await getProductsAsync(items);
+    console.debug('responseCode', responseCode);
+    console.debug('results', results);
+    setResults(results);
+    // Alert.alert(results);
+  }, []);
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -26,10 +50,14 @@ const SubscriptionScreen = () => {
         <Text variant="headlineMedium" style={styles.title}>
           {_t('unlock_access')}
         </Text>
+        <Text>Results</Text>
+        {_.map(results, result => (
+          <Text>{result.productId}</Text>
+        ))}
         <View style={styles.benefitsContainer}>
           {_.map(BENEFITS, ({ id, icon, title, description }) => (
             <View key={id} style={styles.benefitContainer}>
-              <Icon name={icon} size={32} iconStyle={styles.benefitIcon} />
+              {icon}
               <View style={styles.benefitTexts}>
                 <Text variant="bodyLarge" style={styles.benefitTitle}>
                   {title}
