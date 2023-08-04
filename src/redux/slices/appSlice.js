@@ -5,6 +5,7 @@ const initialState = {
   themeMode: 'dark',
   messagesCount: 0,
   lastSentDate: null,
+  subProducts: [],
 };
 
 export const appSlice = createSlice({
@@ -23,9 +24,12 @@ export const appSlice = createSlice({
     setLastSentDate: (state, action) => {
       state.lastSentDate = action.payload;
     },
+    setSubProducts: (state, action) => {
+      state.subProducts = action.payload;
+    },
   },
 });
 
-export const { setLanguage, setThemeMode, setMessagesCount, setLastSentDate } = appSlice.actions;
+export const { setLanguage, setThemeMode, setMessagesCount, setLastSentDate, setSubProducts } = appSlice.actions;
 
 export default appSlice.reducer;

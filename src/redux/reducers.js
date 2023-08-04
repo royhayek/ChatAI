@@ -6,7 +6,7 @@ import { persistReducer } from 'redux-persist';
 const appPersistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: ['messagesCount', 'lastSentDate'],
+  blacklist: ['messagesCount', 'lastSentDate', 'subProducts'],
 };
 
 export default combineReducers({
