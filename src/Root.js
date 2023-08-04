@@ -15,8 +15,9 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as SecureStore from 'expo-secure-store';
 import { setMessagesCount, setLastSentDate } from './redux/slices/appSlice';
 import { connectAsync } from 'expo-in-app-purchases';
-import { Alert, Platform, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
 import LottieView from 'lottie-react-native';
+import SubscriptionManager from './services/SubscriptionManager';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -105,21 +106,27 @@ const Root = () => {
       <BottomSheetModalProvider>
         <NavigationContainer>
           <StatusBar style={theme.dark ? 'light' : 'dark'} />
+          <RootNavigation />
           {showSplash && (
-            <View style={{ flex: 1 }}>
+            <View
+              style={{
+                flex: 1,
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: 'white',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <StatusBar style="dark" />
               <LottieView
                 autoPlay
+                loop={false}
+                style={{ width: 130, height: 130 }}
                 onAnimationFinish={handleAnimationFinish}
-                style={{
-                  width: 200,
-                  height: 200,
-                  backgroundColor: 'transparent',
-                }}
                 source={require('../assets/splash-lottie.json')}
               />
             </View>
           )}
-          <RootNavigation />
+          {/* <SubscriptionManager /> */}
         </NavigationContainer>
       </BottomSheetModalProvider>
     </PaperProvider>
