@@ -11,7 +11,6 @@ import _ from 'lodash';
 // ------------------------------------------------------------ //
 import { Keyboard, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { Divider, FAB, IconButton, TextInput, useTheme } from 'react-native-paper';
-import CircularProgress from 'react-native-circular-progress-indicator';
 import Conversation from './components/Conversation';
 import { Octicons } from '@expo/vector-icons';
 import Intro from './components/Intro';
@@ -39,6 +38,7 @@ const ChatScreen = ({ route, navigation }) => {
   const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
 
   const messagesCount = useSelector(state => state.app.messagesCount);
+  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
@@ -115,7 +115,7 @@ const ChatScreen = ({ route, navigation }) => {
   const handleSubmitPrompt = async message => {
     Keyboard.dismiss();
 
-    if (messagesCount >= DAILY_USAGE_LIMIT) {
+    if (messagesCount >= DAILY_USAGE_LIMIT && !ownedSubscription) {
       setOpenUsageModal(true);
       return;
     }
@@ -250,7 +250,7 @@ const ChatScreen = ({ route, navigation }) => {
   // ------------------------ EFFECTS ------------------------ //
   useEffect(() => {
     navigation.setOptions({
-      headerLeft: () => <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
+      headerLeft: () => !ownedSubscription && <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
       headerRight: () =>
         currentConversation && (
           <IconButton
@@ -260,7 +260,7 @@ const ChatScreen = ({ route, navigation }) => {
           />
         ),
     });
-  }, [openUsageModal, navigation, currentConversation, setOpenUsageModal]);
+  }, [openUsageModal, navigation, currentConversation, ownedSubscription, setOpenUsageModal]);
 
   useEffect(() => {
     route?.params?.conversation && setCurrentConversation(route.params.conversation.id);

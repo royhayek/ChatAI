@@ -17,14 +17,16 @@
     "history": {
       "delete_your_history": "هل أنت متأكد أنك تريد حذف السجل الخاص بك؟",
       "delete": "حذف",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "no_history_found": "لم يتم العثور على محفوظات"
     },
     "settings": {
       "general": "عموما",
       "language": "اللغة",
       "theme": "النمط",
       "subscription": "الاشتراك",
-      "manage_subscription": "إدارة الاشتراك",
+      "restore_purchase": "استعادة الشراء",
+      "manage_subscription": "ادارة الاشتراك",
       "other": "أخرى",
       "faq": "الأسئلة المتداولة",
       "privacy_policy": "سياسة الخصوصية",
@@ -45,13 +47,22 @@
       "no_ads": "لا اعلانات",
       "enjoy_without_ads": "استمتع بـ {{name}} بدون أي إعلانات",
       "unlock_access": "إفتح وصول غير محدود",
-      "cancel_anytime": "إلغاء الفواتير المتكررة في أي وقت"
+      "cancel_anytime": "إلغاء الفواتير المتكررة في أي وقت",
+      "P1W": "أسبوعيًا",
+      "P1M": "شهريًا",
+      "P1Y": "سنويًا",
+      "P4W": "كل 4 أسابيع",
+      "P3M": "كل 3 أشهر",
+      "P6M": "كل 6 شهور"
     },
     "usage": {
       "daily_free_usage": "الاستخدام اليومي المجاني",
       "free_messages_daily": "دردش مع {{name}} مجانًا! {{number}} رسائل يومية",
       "get_unlimited": "احصل على عدد غير محدود مع AI Plus",
       "hit_limit": "يبدو أنك وصلت إلى الحد الأقصى لهذا اليوم! عد غدًا للمزيد أو قم بالترقية للاستمتاع بالدردشة غير المحدودة!"
+    },
+    "network": {
+      "no_internet_connection": "ليس هناك اتصال بالإنترنت"
     }
   }
 }

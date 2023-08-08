@@ -1,9 +1,12 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { API_KEY } from '@env';
 import _ from 'lodash';
-import { addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
+import {
+  addMessage,
+  getMessagesByConversation,
+  updateLocalAnswer,
+} from 'app/src/data/localdb';
 import { useRef } from 'react';
-import { TextDecoder } from 'text-encoding';
 
 const configuration = new Configuration({
   // organization: 'org-qKgEIs4udJUfy2jiLl0PsRgE',
@@ -12,8 +15,12 @@ const configuration = new Configuration({
 
 export const openai = new OpenAIApi(configuration);
 
-export const generateResponse = async (newQuestion, conversationId, storedValues, setMessages) => {
-
+export const generateResponse = async (
+  newQuestion,
+  conversationId,
+  storedValues,
+  setMessages,
+) => {
   let completeOptions = {
     model: 'gpt-3.5-turbo',
     messages: [...storedValues, { content: newQuestion, role: 'user' }],
@@ -23,8 +30,13 @@ export const generateResponse = async (newQuestion, conversationId, storedValues
   try {
     console.debug('completeOptions', completeOptions);
 
-    const response = await openai.createChatCompletion(completeOptions, { responseType: 'stream' });
-    const transformed = response.data.replaceAll('data: ', '').replaceAll('\n\n', ',').replaceAll(',[DONE],', '');
+    const response = await openai.createChatCompletion(completeOptions, {
+      responseType: 'stream',
+    });
+    const transformed = response.data
+      .replaceAll('data: ', '')
+      .replaceAll('\n\n', ',')
+      .replaceAll(',[DONE],', '');
     const arrayOfWords = JSON.parse(`[${transformed.trim()}]`);
     console.debug('arrayOfWords', arrayOfWords);
 
@@ -44,7 +56,6 @@ export const generateResponse = async (newQuestion, conversationId, storedValues
       }, 2000);
 
       await updateLocalAnswer({ messageId: convo[0].id, answer: result });
-
     });
     // for await (const chunk of transformed) {
     //   console.log(chunk.toString());

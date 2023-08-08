@@ -17,13 +17,15 @@
     "history": {
       "delete_your_history": "Voulez-vous vraiment supprimer votre historique?",
       "delete": "Supprimer",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "no_history_found": "Aucun historique trouvé"
     },
     "settings": {
       "general": "Générale",
       "language": "Langue",
       "theme": "Thème",
       "subscription": "Abonnement",
+      "restore_purchase": "Restaurer l'achat",
       "manage_subscription": "Gérer l'abonnement",
       "other": "Autre",
       "faq": "Questions Fréquemment Posées",
@@ -45,13 +47,22 @@
       "no_ads": "Pas de publicité",
       "enjoy_without_ads": "Profitez de {{name}} sans aucune publicité",
       "unlock_access": "Déverrouillez l'accès illimité",
-      "cancel_anytime": "Annulez la facturation récurrente à tout moment"
+      "cancel_anytime": "Annulez la facturation récurrente à tout moment",
+      "P1W": "Hebdomadaire",
+      "P1M": "Mensuelle",
+      "P1Y": "Annuelle",
+      "P4W": "Toutes les 4 semaines",
+      "P3M": "Tous les 3 mois",
+      "P6M": "Tous les 6 mois"
     },
     "usage": {
       "daily_free_usage": "Utilisation gratuite quotidienne",
       "free_messages_daily": "Discutez avec {{name}} gratuitement! {{number}} messages par jour",
       "get_unlimited": "Obtenez l'illimité avec AI Plus",
       "hit_limit": "Il semble que vous ayez atteint votre limite pour aujourd'hui! Revenez demain pour en savoir plus ou obtenez l'illimité pour profiter d'un chat illimité!"
+    },
+    "network": {
+      "no_internet_connection": "No Internet Connection"
     }
   }
 }

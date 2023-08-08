@@ -3,7 +3,9 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 
-export const appName = Constants.manifest?.name;
+export const appName = Constants.expoConfig.name;
+
+export const isAndroid = Platform.OS === 'android';
 
 export const wait = timeout => {
   return new Promise(resolve => {

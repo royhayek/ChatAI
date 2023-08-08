@@ -1,45 +1,104 @@
-import React, { useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
-import InAppPurchase from 'react-native-iap';
+import { useCallback, useEffect } from 'react';
+import { Alert, Platform } from 'react-native';
+import _ from 'lodash';
+import {
+  clearTransactionIOS,
+  endConnection,
+  finishTransaction,
+  flushFailedPurchasesCachedAsPendingAndroid,
+  getAvailablePurchases,
+  getPurchaseHistory,
+  getSubscriptions,
+  initConnection,
+  promotedProductListener,
+  purchaseErrorListener,
+  purchaseUpdatedListener,
+  setup,
+} from 'react-native-iap';
 import { useDispatch } from 'react-redux';
-import { setSubProducts } from '../redux/slices/appSlice';
+import { isAndroid } from '../helpers';
+import { setOwnedSubscription, setPaidSubscriptions } from '../redux/slices/appSlice';
 
 const SubscriptionManager = () => {
   const dispatch = useDispatch();
-  const updateSubProducts = useCallback(payload => dispatch(setSubProducts(payload)), [dispatch]);
+  const updateSubscriptions = useCallback(payload => dispatch(setPaidSubscriptions(payload)), [dispatch]);
+  const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
-  useEffect(() => {
-    // Initialize the InAppPurchase module
-    InAppPurchase.prepare()
-      .then(() => {
-        // Load available products (subscription plans) from the app stores
-        const productIds = Platform.select({
-          android: ['chatai_pro', 'chatai-pro', 'chata-pro-monthly', 'chatai-pro-yearly'],
-          ios: ['ios_subscription_weekly', 'ios_subscription_monthly', 'ios_subscription_yearly'],
-        });
-        return InAppPurchase.getProducts(productIds);
-      })
-      .then(products => {
-        // Here you can store the available subscription plans in your state or Redux store
-        console.log('Available Subscription Plans:', products);
-        updateSubProducts(products);
-      })
-      .catch(error => {
-        console.log('Error setting up subscriptions:', error.message);
-      });
-  }, []);
-
-  const handleSubscriptionPurchase = async productId => {
+  const fetchAvailablePurchases = async () => {
     try {
-      const purchase = await InAppPurchase.purchase(productId);
-      // Handle the purchase response
-      console.log('Purchase Response:', purchase);
-      // You can implement additional logic here, like updating the user's subscription status in your backend
+      const history = await getPurchaseHistory();
+      const purchases = await getAvailablePurchases();
+      const lastPurchase = _.last(purchases);
+      updateOwnedSubscription(lastPurchase?.productId);
+      console.debug('[PURCHASE HISTORY] :: ', { history });
+      console.debug('[AVAILABLE PURCHASES] :: ', { purchases });
     } catch (error) {
-      console.log('Error making the purchase:', error.message);
-      // Handle the error (e.g., show an error message to the user)
+      console.debug('[fetchAvailablePurchases] - ERROR :: ', error);
     }
   };
+
+  useEffect(() => {
+    setup({ storekitMode: 'STOREKIT2_MODE' });
+    // Initialize the InAppPurchase module
+    initConnection()
+      .then(async () => {
+        if (isAndroid) {
+          await flushFailedPurchasesCachedAsPendingAndroid();
+        } else {
+          __DEV__ && (await clearTransactionIOS());
+        }
+
+        fetchAvailablePurchases();
+
+        // Load available products (subscription plans) from the app stores
+        const productIds = Platform.select({
+          android: ['chatai_pro', 'chatai_pro_monthly', 'chatai_pro_yearly'],
+          ios: ['ios_subscription_weekly', 'ios_subscription_monthly', 'ios_subscription_yearly'],
+        });
+        return getSubscriptions({ skus: productIds });
+      })
+      .then(subscriptions => {
+        // Here you can store the available subscription plans in your state or Redux store
+        console.log('Available Subscription Plans:', subscriptions);
+
+        updateSubscriptions(subscriptions);
+      })
+      .catch(error => {
+        console.log('Error setting up subscriptions:', error);
+      });
+
+    const purchaseUpdate = purchaseUpdatedListener(async purchase => {
+      const receipt = purchase.transactionReceipt ? purchase.transactionReceipt : purchase.originalJson;
+
+      if (receipt) {
+        try {
+          const acknowledgeResult = await finishTransaction({ purchase });
+
+          console.info('acknowledgeResult', acknowledgeResult);
+        } catch (error) {
+          console.debug('finishTransaction', error);
+        }
+
+        const parsedReceipt = JSON.parse(receipt);
+        console.debug('[RECEIPT AFTER PURCHASE] :: ', parsedReceipt);
+        updateOwnedSubscription(parsedReceipt.productId);
+      }
+    });
+
+    const purchaseError = purchaseErrorListener(error => {
+      Alert.alert('purchase error', JSON.stringify(error));
+    });
+
+    const promotedProduct = promotedProductListener(productId => Alert.alert('Product promoted', productId));
+
+    return () => {
+      purchaseUpdate?.remove();
+      purchaseError?.remove();
+      promotedProduct?.remove();
+
+      endConnection();
+    };
+  }, []);
 
   return null;
 };

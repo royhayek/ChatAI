@@ -17,14 +17,16 @@
     "history": {
       "delete_your_history": "Are you sure you want to delete your history?",
       "delete": "Delete",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "no_history_found": "No History Found"
     },
     "settings": {
       "general": "General",
       "language": "Language",
       "theme": "Theme",
       "subscription": "Subscription",
-      "manage_subscription": "Manage subscription",
+      "restore_purchase": "Restore purchase",
+      "manage_subscription": "Manage Subscription",
       "other": "Other",
       "faq": "Frequently Asked Questions",
       "privacy_policy": "Privacy Policy",
@@ -45,13 +47,22 @@
       "no_ads": "No Ads",
       "enjoy_without_ads": "Enjoy {{name}} without any ads",
       "unlock_access": "Unlock Unlimited Access",
-      "cancel_anytime": "Cancel recurring billing anytime"
+      "cancel_anytime": "Cancel recurring billing anytime",
+      "P1W": "Weekly",
+      "P1M": "Monthly",
+      "P1Y": "Yearly",
+      "P4W": "Every 4 Weeks",
+      "P3M": "Every 3 Months",
+      "P6M": "Every 6 Months"
     },
     "usage": {
       "daily_free_usage": "Daily Free Usage",
       "free_messages_daily": "Chat with {{name}} for free! {{number}} messages daily",
       "get_unlimited": "Get Unlimited with AI Plus",
       "hit_limit": "It looks like you've hit your limit for today! Come back tomorrow for more or upgrade to enjoy unlimited chat!"
+    },
+    "network": {
+      "no_internet_connection": "Pas de connexion Internet"
     }
   }
 }

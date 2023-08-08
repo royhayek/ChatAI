@@ -41,11 +41,20 @@ const Usage = ({ open, onClose }) => {
   const bottomSheetRef = useRef();
   const navigation = useNavigation();
 
-  const availableMsgsCount = useMemo(() => DAILY_USAGE_LIMIT - messagesCount, [messagesCount]);
+  const availableMsgsCount = useMemo(
+    () => DAILY_USAGE_LIMIT - messagesCount,
+    [messagesCount],
+  );
 
   const snapPoints = useMemo(
     () => [
-      availableMsgsCount > 0 ? (Platform.OS === 'android' ? '55%' : '45%') : Platform.OS === 'android' ? '58%' : '48%',
+      availableMsgsCount > 0
+        ? Platform.OS === 'android'
+          ? '55%'
+          : '45%'
+        : Platform.OS === 'android'
+        ? '58%'
+        : '48%',
     ],
     [],
   );
@@ -80,7 +89,10 @@ const Usage = ({ open, onClose }) => {
         <Pie radius={16} activeStrokeWidth={7} inActiveStrokeWidth={6} />
       </TouchableOpacity>
 
-      <CustomBottomSheet sheetRef={bottomSheetRef} snapPoints={snapPoints} onClose={handleSheetClose}>
+      <CustomBottomSheet
+        sheetRef={bottomSheetRef}
+        snapPoints={snapPoints}
+        onClose={handleSheetClose}>
         <View style={styles.bottomSheetHeader}>
           <Text variant="titleMedium" style={styles.bottomSheetTitle}>
             {_t('daily_free_usage')}
@@ -90,17 +102,34 @@ const Usage = ({ open, onClose }) => {
             rippleColor="transparent"
             style={{ position: 'absolute' }}
             onPress={handleSheetClose}
-            icon={() => <Ionicons name="md-close" size={25} color={theme.dark ? 'white' : 'black'} />}
+            icon={() => (
+              <Ionicons
+                name="md-close"
+                size={25}
+                color={theme.dark ? 'white' : 'black'}
+              />
+            )}
           />
         </View>
         <View style={styles.bottomSheetContent}>
-          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />
+          <Pie
+            hasSuffix
+            radius={58}
+            activeStrokeWidth={15}
+            inActiveStrokeWidth={14}
+          />
           <View style={styles.freeMessagesTextBg}>
             <Text variant="labelMedium" style={{ textAlign: 'center' }}>
-              {availableMsgsCount > 0 ? _t('free_messages_daily', { name: appName, number: 5 }) : _t('hit_limit')}
+              {availableMsgsCount > 0
+                ? _t('free_messages_daily', { name: appName, number: 5 })
+                : _t('hit_limit')}
             </Text>
           </View>
-          <RegularButton title={_t('get_unlimited')} style={styles.upgradeButton} onPress={handleGetUnlimitedPress} />
+          <RegularButton
+            title={_t('get_unlimited')}
+            style={styles.upgradeButton}
+            onPress={handleGetUnlimitedPress}
+          />
         </View>
       </CustomBottomSheet>
     </>
