@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.codeblow.chatai"
@@ -26,7 +24,8 @@
       "package": "com.codeblow.chatai",
       "runtimeVersion": {
         "policy": "sdkVersion"
-      }
+      },
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,6 +37,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/c944d619-e2a3-4ebc-b1a1-d9adfa9acfc5"
-    }
+    },
+    "plugins": ["./plugins/withAndroidStrategiesPlugin.js", "react-native-iap"]
   }
 }

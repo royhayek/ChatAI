@@ -1,59 +1,84 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import _ from 'lodash';
-import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, NativeModules, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import RegularButton from 'app/src/components/Buttons/Regular';
 import { BENEFITS, PLANS } from './config';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
 import LeftChevron from 'app/src/lib/icons/LeftChevron';
-import { getProductsAsync } from 'expo-in-app-purchases';
+import { getBillingResponseCodeAsync, getPurchaseHistoryAsync } from 'expo-in-app-purchases';
+import { useDispatch, useSelector } from 'react-redux';
+import { requestSubscription, useIAP } from 'react-native-iap';
+import { setOwnedSubscription } from 'app/src/redux/slices/appSlice';
+import { isAndroid } from 'app/src/helpers';
 
 const _t = (key, options) => t(`subscription.${key}`, options);
 
-const SubscriptionScreen = () => {
+const SubscriptionScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+  const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
+
+  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
+  const subscriptions = useSelector(state => state.app.subscriptions);
+
   const theme = useTheme();
   const styles = makeStyles(theme);
-  const [results, setResults] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(PLANS[0]);
+  const [subscribed, setSubscribed] = useState(false);
 
-  const handleContinuePress = useCallback(() => {}, []);
+  const plans = useMemo(() => {
+    const firstSubscription = _.first(subscriptions);
+    const offerDetails = firstSubscription?.subscriptionOfferDetails;
+    return _.forEach(offerDetails, detail => detail);
+  }, []);
 
-  const fetchSubscriptions = useCallback(async () => {
-    const items = Platform.select({
-      ios: [
-        'dev.expo.products.premium',
-        'dev.expo.payments.updates',
-        'dev.expo.payments.adfree',
-        'dev.expo.payments.gold',
-      ],
-      android: ['chatai_pro', 'chatai_pro_monthly', 'chatai-pro-monthly'],
-    });
+  const handleBuySubscription = async () => {
+    const { RNIapIos, RNIapIosSk2, RNIapModule, RNIapAmazonModule } = NativeModules;
+    const isPlay = isAndroid && !!RNIapModule;
+    const firstSubscription = _.first(subscriptions);
+    const productId = firstSubscription?.productId;
+    const offerToken = selectedPlan?.offerToken;
+    if (isPlay && !offerToken) {
+      console.warn(`There are no subscription Offers for selected product (Only requiered for Google Play purchases): ${productId}`);
+    }
+    try {
+      await requestSubscription({
+        sku: productId,
+        ...(offerToken && {
+          subscriptionOffers: [{ sku: productId, offerToken }],
+        }),
+      });
+      setSubscribed(true);
+    } catch (error) {
+      if (error) {
+        console.error(`[${error.code}]: ${error.message}`, error);
+      } else {
+        console.error('handleBuySubscription', error);
+      }
+    }
+  };
 
-    const { responseCode, results } = await getProductsAsync(items);
-    console.debug('responseCode', responseCode);
-    console.debug('results', results);
-    setResults(results);
-    // Alert.alert(results);
+  const getHistory = useCallback(async () => {
+    const history = await getPurchaseHistoryAsync();
+    console.debug('history in subscriptions', history);
   }, []);
 
   useEffect(() => {
-    fetchSubscriptions();
+    getHistory();
   }, []);
+
+  useEffect(() => {
+    console.debug('[useEffect] :: ', { ownedSubscription, subscribed });
+    ownedSubscription && subscribed && navigation.goBack();
+  }, [ownedSubscription, subscribed]);
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        style={styles.flex1}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView style={styles.flex1} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollViewContent}>
         <Text variant="headlineMedium" style={styles.title}>
           {_t('unlock_access')}
         </Text>
-        <Text>Results</Text>
-        {_.map(results, result => (
-          <Text>{result.productId}</Text>
-        ))}
         <View style={styles.benefitsContainer}>
           {_.map(BENEFITS, ({ id, icon, title, description }) => (
             <View key={id} style={styles.benefitContainer}>
@@ -70,24 +95,28 @@ const SubscriptionScreen = () => {
           ))}
         </View>
         <View style={styles.plansContainer}>
-          {_.map(PLANS, plan => {
-            const isSelected = _.isEqual(selectedPlan, plan);
+          {_.map(subscriptions, subscription => {
+            const subscriptionOfferDetails = _.first(subscription.subscriptionOfferDetails);
+            const isSelected = _.isEqual(selectedPlan, subscriptionOfferDetails);
+            const pricingPhase = _.first(subscriptionOfferDetails.pricingPhases.pricingPhaseList);
+            console.debug('pricingPhase', pricingPhase);
+
             return (
               <TouchableOpacity
-                key={plan?.id}
-                onPress={() => setSelectedPlan(plan)}
+                key={subscriptionOfferDetails?.basePlanId}
+                onPress={() => setSelectedPlan(subscriptionOfferDetails)}
                 style={styles.planContainer(isSelected)}>
                 <Text variant="bodyMedium" style={styles.planTitle}>
-                  {plan?.title}
+                  {_t(pricingPhase.billingPeriod)}
                 </Text>
                 <Text variant="bodyLarge" style={styles.planPrice}>
-                  US${parseInt(plan?.price).toFixed(2)}/{plan?.unit}
+                  {pricingPhase.formattedPrice} {/* /{plan?.unit} */}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
-        <RegularButton title={t('common.continue')} onPress={handleContinuePress} />
+        <RegularButton title={t('common.continue')} onPress={handleBuySubscription} />
         <Text variant="bodySmall" style={styles.cancelText}>
           {_t('cancel_anytime')}
         </Text>

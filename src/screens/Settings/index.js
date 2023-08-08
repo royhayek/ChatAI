@@ -2,13 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import _ from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
-import { Button, Divider, Menu, Modal, Portal, Switch, Text, useTheme } from 'react-native-paper';
+import { Menu, Switch, Text, useTheme } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
-import { setLanguage, setThemeMode } from '../../redux/slices/appSlice';
-import i18n, { changeLanguage, isRTL, t } from '../../config/i18n';
-import { Fontisto } from '@expo/vector-icons';
+import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/slices/appSlice';
+import { changeLanguage, isRTL, t } from '../../config/i18n';
 import makeStyles from './styles';
 import { appName } from 'app/src/helpers';
+import SubscriptionManager from 'app/src/services/SubscriptionManager';
+import { getAvailablePurchases } from 'react-native-iap';
 
 const _t = (key, options) => t(`settings.${key}`, options);
 
@@ -17,8 +18,11 @@ const SettingsScreen = ({ navigation }) => {
   const styles = makeStyles(theme);
   const themeMode = useSelector(state => state.app.themeMode);
   const language = useSelector(state => state.app.language);
+  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
+
   const isDark = _.isEqual(themeMode, 'dark');
   const dispatch = useDispatch();
+  const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
   const [openLangMenu, setOpenLangMenu] = useState(false);
   const [openUpgradeModal, setOpenUpgradeModal] = useState(false);
@@ -45,6 +49,17 @@ const SettingsScreen = ({ navigation }) => {
     dispatch(setLanguage(lng));
     changeLanguage(lng);
     toggleLangMenu();
+  }, []);
+
+  const handleRestorePurchase = useCallback(async () => {
+    try {
+      const purchases = await getAvailablePurchases();
+      console.debug('[handleRestorePurchase] :: ', { purchases });
+      const lastPurchase = _.last(purchases);
+      updateOwnedSubscription(lastPurchase?.productId);
+    } catch (error) {
+      console.error('[handleRestorePurchase] - error :: ', error);
+    }
   }, []);
 
   const toggleThemeMode = useCallback(() => dispatch(setThemeMode(isDark ? 'light' : 'dark')), [dispatch, isDark]);
@@ -107,7 +122,13 @@ const SettingsScreen = ({ navigation }) => {
       title: _t('subscription'),
       items: [
         {
-          key: 'subscription',
+          key: 'restore_purchase',
+          title: _t('restore_purchase'),
+          icon: 'ios-cart-outline',
+          onPress: handleRestorePurchase,
+        },
+        {
+          key: 'manage_subscription',
           title: _t('manage_subscription'),
           icon: 'ios-today-outline',
           onPress: navigateToSubscription,
@@ -202,7 +223,7 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {renderUpgradeButton()}
+      {!ownedSubscription && renderUpgradeButton()}
       {renderContent()}
     </View>
   );
