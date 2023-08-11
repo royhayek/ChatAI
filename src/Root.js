@@ -8,7 +8,6 @@ import { darkTheme, lightTheme } from './lib/theme';
 import RootNavigation from './navigation';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from './helpers';
-import './config/openAI';
 import { createTables } from './data/localdb';
 import { changeLocale } from './config/i18n';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -31,14 +30,8 @@ Notifications.setNotificationHandler({
 
 const Root = () => {
   const dispatch = useDispatch();
-  const updateMessagesCount = useCallback(
-    payload => dispatch(setMessagesCount(payload)),
-    [dispatch],
-  );
-  const updateLastSentDate = useCallback(
-    payload => dispatch(setLastSentDate(payload)),
-    [dispatch],
-  );
+  const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
+  const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
 
   const themeMode = useSelector(state => state.app.themeMode);
   const language = useSelector(state => state.app.language);
@@ -87,22 +80,18 @@ const Root = () => {
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener(notification => {
-        setNotification(notification);
-      });
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
 
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(response => {
-        console.log(response);
-      });
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
 
     initializeMessageCount();
 
     return () => {
-      Notifications.removeNotificationSubscription(
-        notificationListener.current,
-      );
+      Notifications.removeNotificationSubscription(notificationListener.current);
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);

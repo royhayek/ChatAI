@@ -1,14 +1,15 @@
-import Translation from 'app/src/lib/icons/Assistants/Translation';
-import Weather from 'app/src/lib/icons/Assistants/Weather';
-import Travel from 'app/src/lib/icons/Assistants/Travel';
+import React from 'react';
+import Math from 'app/src/lib/icons/Assistants/Math';
 import Facts from 'app/src/lib/icons/Assistants/Facts';
-import Technology from 'app/src/lib/icons/Assistants/Technology';
-import Programming from 'app/src/lib/icons/Assistants/Programming';
+import Email from 'app/src/lib/icons/Assistants/Email';
+import Travel from 'app/src/lib/icons/Assistants/Travel';
+import Health from 'app/src/lib/icons/Assistants/Health';
+import Weather from 'app/src/lib/icons/Assistants/Weather';
 import Support from 'app/src/lib/icons/Assistants/Support';
 import Recipes from 'app/src/lib/icons/Assistants/Recipes';
-import Math from 'app/src/lib/icons/Assistants/Math';
-import Health from 'app/src/lib/icons/Assistants/Health';
-import Email from 'app/src/lib/icons/Assistants/Email';
+import Technology from 'app/src/lib/icons/Assistants/Technology';
+import Programming from 'app/src/lib/icons/Assistants/Programming';
+import Translation from 'app/src/lib/icons/Assistants/Translation';
 
 export const ASSISTANTS = [
   {

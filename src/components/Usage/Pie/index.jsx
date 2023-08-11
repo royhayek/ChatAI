@@ -2,15 +2,15 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import React, { useMemo } from 'react';
+import CircularProgress from 'react-native-circular-progress-indicator';
+import { useTheme } from 'react-native-paper';
+import { useSelector } from 'react-redux';
 import PT from 'prop-types';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
-import CircularProgress from 'react-native-circular-progress-indicator';
-import { isRTL } from 'app/src/config/i18n';
 import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
-import { useSelector } from 'react-redux';
-import { useTheme } from 'react-native-paper';
+import { isRTL } from 'app/src/config/i18n';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //

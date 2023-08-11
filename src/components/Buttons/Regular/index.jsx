@@ -1,25 +1,40 @@
-import { View } from 'react-native';
-import { Button as RNPButton, Text, useTheme } from 'react-native-paper';
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React from 'react';
-import PT from 'prop-types';
-import makeStyles from './styles';
+import { View, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { TouchableOpacity } from 'react-native';
-
-const RegularButton = ({ title, onPress, style, leftIcon, ...props }) => {
+import { Text, useTheme } from 'react-native-paper';
+import PT from 'prop-types';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
+import makeStyles from './styles';
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
+const RegularButton = ({ title, onPress, style, startIcon, endIcon, backgroundColors, disabled, ...props }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.container, style]} {...props}>
+    <TouchableOpacity onPress={onPress} style={[styles.container(disabled), style]} disabled={disabled} {...props}>
       <LinearGradient
         start={{ x: 0, y: 0.75 }}
         end={{ x: 1, y: 0.25 }}
-        colors={[theme.colors.primary, theme.colors.primary, theme.colors.darkBlue]}
+        colors={backgroundColors ?? [theme.colors.primary, theme.colors.primary, theme.colors.darkBlue]}
         style={styles.linearBackground}>
-        {leftIcon}
+        {startIcon}
         <Text variant="titleMedium" style={styles.title}>
           {title}
         </Text>
+        {endIcon && <View style={styles.endIcon}>{endIcon}</View>}
       </LinearGradient>
     </TouchableOpacity>
   );

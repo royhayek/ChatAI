@@ -38,6 +38,21 @@
     "updates": {
       "url": "https://u.expo.dev/c944d619-e2a3-4ebc-b1a1-d9adfa9acfc5"
     },
-    "plugins": ["./plugins/withAndroidStrategiesPlugin.js", "react-native-iap"]
+    "plugins": [
+      "./plugins/withAndroidStrategiesPlugin.js",
+      "react-native-iap",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-1469570455778464~7118559925",
+    "ios_app_id": "ca-app-pub-1469570455778464~1963740474"
   }
 }

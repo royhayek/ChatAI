@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export default makeStyles = theme =>
+export default theme =>
   StyleSheet.create({
     bottomSheetBackground: {
       backgroundColor: theme.colors.background,
@@ -28,5 +28,9 @@ export default makeStyles = theme =>
     },
     upgradeButton: {
       width: '90%',
+    },
+    earnButton: {
+      width: '90%',
+      marginTop: 15,
     },
   });

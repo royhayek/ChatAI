@@ -9,9 +9,7 @@ export const createTables = () => {
   return new Promise((resolve, reject) => {
     db.transaction(
       tx => {
-        tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS conversations (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, createdAt TEXT);',
-        );
+        tx.executeSql('CREATE TABLE IF NOT EXISTS conversations (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, createdAt TEXT);');
         tx.executeSql(
           'CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conversationId INTEGER, question TEXT, answer TEXT, createdAt TEXT);',
         );
@@ -40,11 +38,11 @@ export const addConversation = conversation => {
       tx.executeSql(
         'INSERT INTO conversations (title, createdAt) VALUES (?, ?)',
         [title, createdAt],
-        (_, res) => {
+        (t, res) => {
           console.debug('res', res);
           resolve(res?.insertId);
         },
-        (_, err) => {
+        (t, err) => {
           // console.debug('[addConversation] :: ', err);
           reject();
         },
@@ -58,12 +56,12 @@ export const getConversations = () => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `SELECT * FROM conversations`,
+        'SELECT * FROM conversations',
         [],
-        (_, { rows: { _array } }) => {
+        (t, { rows: { _array } }) => {
           resolve(_array);
         },
-        (_, error) => {
+        (t, error) => {
           console.error(error);
           reject();
         },
@@ -77,9 +75,9 @@ export const getConversation = id => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `SELECT * FROM conversations WHERE id = ?;`,
+        'SELECT * FROM conversations WHERE id = ?;',
         [id],
-        (_, { rows: { _array } }) => {
+        (t, { rows: { _array } }) => {
           resolve(_array);
         },
         () => {
@@ -95,7 +93,7 @@ export const deleteConversation = id => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `DELETE FROM conversations WHERE id = ?;`,
+        'DELETE FROM conversations WHERE id = ?;',
         [id],
         () => {
           resolve();
@@ -113,7 +111,7 @@ export const deleteAllConversations = () => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `DELETE FROM conversations`,
+        'DELETE FROM conversations',
         null,
         () => {
           resolve();
@@ -130,13 +128,13 @@ export const getMessagesByConversation = id => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `SELECT * FROM messages WHERE conversationId = ?;`,
+        'SELECT * FROM messages WHERE conversationId = ?;',
         [id],
-        (_, { rows: { _array } }) => {
-          console.debug('[getMessagesByConversation] :: _array', _array)
+        (t, { rows: { _array } }) => {
+          console.debug('[getMessagesByConversation] :: _array', _array);
           resolve(_array);
         },
-        (_, err) => {
+        (t, err) => {
           console.debug('[getMessagesByConversation] :: ', err);
           reject();
         },
@@ -158,10 +156,10 @@ export const addMessage = message => {
         tx.executeSql(
           'INSERT INTO messages (conversationId, question, answer, createdAt) VALUES (?,?,?,?)',
           [conversationId, question, answer, createdAt],
-          (_, res) => {
+          (t, res) => {
             resolve(res.insertId);
           },
-          (_, err) => {
+          (t, err) => {
             console.debug('[addMessage] :: ', err);
             reject();
           },
@@ -184,12 +182,12 @@ export const updateLocalAnswer = message => {
 
       db.transaction(tx => {
         tx.executeSql(
-          `UPDATE messages SET answer = ? WHERE id = ?;`,
+          'UPDATE messages SET answer = ? WHERE id = ?;',
           [answer, messageId],
           () => {
             resolve();
           },
-          (_, error) => {
+          (t, error) => {
             console.debug('error', error);
             reject();
           },

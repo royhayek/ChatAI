@@ -3,11 +3,10 @@ import _ from 'lodash';
 import { Alert, NativeModules, ScrollView, TouchableOpacity, View } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import RegularButton from 'app/src/components/Buttons/Regular';
-import { BENEFITS, PLANS } from './config';
+import { BENEFITS, dummyPlans, benefits } from './config';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
-import LeftChevron from 'app/src/lib/icons/LeftChevron';
-import { getBillingResponseCodeAsync, getPurchaseHistoryAsync } from 'expo-in-app-purchases';
+import { getPurchaseHistoryAsync } from 'expo-in-app-purchases';
 import { useDispatch, useSelector } from 'react-redux';
 import { requestSubscription, useIAP } from 'react-native-iap';
 import { setOwnedSubscription } from 'app/src/redux/slices/appSlice';
@@ -24,7 +23,7 @@ const SubscriptionScreen = ({ navigation }) => {
 
   const theme = useTheme();
   const styles = makeStyles(theme);
-  const [selectedPlan, setSelectedPlan] = useState(PLANS[0]);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [subscribed, setSubscribed] = useState(false);
 
   const plans = useMemo(() => {
@@ -66,12 +65,14 @@ const SubscriptionScreen = ({ navigation }) => {
 
   useEffect(() => {
     getHistory();
-  }, []);
+    !_.isEmpty(subscriptions) && _.isEmpty(selectedPlan) && setSelectedPlan(_.first(_.first(subscriptions)?.subscriptionOfferDetails));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscriptions]);
 
   useEffect(() => {
     console.debug('[useEffect] :: ', { ownedSubscription, subscribed });
     ownedSubscription && subscribed && navigation.goBack();
-  }, [ownedSubscription, subscribed]);
+  }, [navigation, ownedSubscription, subscribed]);
 
   return (
     <View style={styles.container}>
@@ -80,7 +81,7 @@ const SubscriptionScreen = ({ navigation }) => {
           {_t('unlock_access')}
         </Text>
         <View style={styles.benefitsContainer}>
-          {_.map(BENEFITS, ({ id, icon, title, description }) => (
+          {_.map(benefits(theme), ({ id, icon, title, description }) => (
             <View key={id} style={styles.benefitContainer}>
               {icon}
               <View style={styles.benefitTexts}>
@@ -99,8 +100,6 @@ const SubscriptionScreen = ({ navigation }) => {
             const subscriptionOfferDetails = _.first(subscription.subscriptionOfferDetails);
             const isSelected = _.isEqual(selectedPlan, subscriptionOfferDetails);
             const pricingPhase = _.first(subscriptionOfferDetails.pricingPhases.pricingPhaseList);
-            console.debug('pricingPhase', pricingPhase);
-
             return (
               <TouchableOpacity
                 key={subscriptionOfferDetails?.basePlanId}

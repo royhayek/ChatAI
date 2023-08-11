@@ -1,15 +1,26 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React from 'react';
-import { Portal, useTheme } from 'react-native-paper';
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { Portal, useTheme } from 'react-native-paper';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
 import makeStyles from './styles';
-import { SafeAreaView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-export const CustomBottomSheet = ({ sheetRef, snapPoints, handleSheetClose, children }) => {
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
+const CustomBottomSheet = ({ sheetRef, snapPoints, handleSheetClose, children }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
-  const insets = useSafeAreaInsets();
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   return (
     <Portal>
       <BottomSheet
@@ -20,15 +31,7 @@ export const CustomBottomSheet = ({ sheetRef, snapPoints, handleSheetClose, chil
         onClose={handleSheetClose}
         handleIndicatorStyle={{ display: 'none' }}
         backgroundStyle={styles.bottomSheetBackground}
-        backdropComponent={props => (
-          <BottomSheetBackdrop
-            {...props}
-            opacity={0.5}
-            disappearsOnIndex={-1}
-            appearsOnIndex={0}
-            pressBehavior="close"
-          />
-        )}>
+        backdropComponent={props => <BottomSheetBackdrop {...props} opacity={0.5} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" />}>
         {children}
       </BottomSheet>
     </Portal>

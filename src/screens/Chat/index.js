@@ -1,7 +1,9 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import RNEventSource from 'react-native-event-source';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import EventSource from 'react-native-sse';
@@ -9,24 +11,24 @@ import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
-import { Keyboard, KeyboardAvoidingView, ScrollView, View } from 'react-native';
-import { Divider, FAB, IconButton, TextInput, useTheme } from 'react-native-paper';
+import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, View } from 'react-native';
+import { Divider, IconButton, TextInput, useTheme } from 'react-native-paper';
+import BackButton from 'app/src/components/Buttons/Back';
 import Conversation from './components/Conversation';
 import { Octicons } from '@expo/vector-icons';
+import Usage from 'app/src/components/Usage';
 import Intro from './components/Intro';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
 import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
+import { setLastSentDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
+import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
+import { ASSISTANTS } from '../Categories/data';
 import { isRTL, t } from '../../config/i18n';
 import makeStyles from './styles';
 import { API_KEY } from '@env';
-import Usage from 'app/src/components/Usage';
 import RegularButton from 'app/src/components/Buttons/Regular';
-import { useDispatch, useSelector } from 'react-redux';
-import { setLastSentDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
-import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
-
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -51,6 +53,9 @@ const ChatScreen = ({ route, navigation }) => {
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [openUsageModal, setOpenUsageModal] = useState(false);
 
+  const controller = new AbortController();
+  const es = useRef();
+
   const apiMessages = _.reduce(
     messages,
     (r, v) => {
@@ -58,6 +63,10 @@ const ChatScreen = ({ route, navigation }) => {
     },
     [],
   );
+
+  const routeParams = route.params;
+  const isAssistantChat = _.has(routeParams, 'id');
+  const assistant = _.find(ASSISTANTS, { id: routeParams?.id });
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -160,7 +169,7 @@ const ChatScreen = ({ route, navigation }) => {
     };
 
     // Initiate the requests
-    const es = new EventSource(url, {
+    es.current = new EventSource(url, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${API_KEY}`,
@@ -182,11 +191,11 @@ const ChatScreen = ({ route, navigation }) => {
       } else if (event.type === 'message') {
         if (event.data !== '[DONE]') {
           // get every piece of text
-          const data = JSON.parse(event.data);
-          const delta = data.choices[0].delta;
+          const parsedData = JSON.parse(event.data);
+          const delta = parsedData.choices[0].delta;
 
           // Check if is the last text to close the events request
-          const finish_reason = data.choices[0].finish_reason;
+          const finish_reason = parsedData.choices[0].finish_reason;
 
           if (finish_reason === 'stop') {
             // Update answer in local storage
@@ -202,7 +211,7 @@ const ChatScreen = ({ route, navigation }) => {
             updateMessageCount();
 
             // Close event source to prevent memory leak
-            es.close();
+            es.current.close();
           } else {
             if (delta && delta.content) {
               // Update content with new data
@@ -222,7 +231,7 @@ const ChatScreen = ({ route, navigation }) => {
             }
           }
         } else {
-          es.close();
+          es.current.close();
         }
       } else if (event.type === 'error') {
         console.error('Event Source Connection error:', event.message);
@@ -232,17 +241,48 @@ const ChatScreen = ({ route, navigation }) => {
     };
 
     // Add listeners
-    es.addEventListener('open', listener);
-    es.addEventListener('message', listener);
-    es.addEventListener('close', listener);
-    es.addEventListener('error', listener);
+    es.current.addEventListener('open', listener);
+    es.current.addEventListener('message', listener);
+    es.current.addEventListener('close', listener);
+    es.current.addEventListener('error', listener);
 
     return () => {
       // Remove listeners and close event source to prevent memory leak
-      es.removeAllEventListeners();
-      es.close();
+      es.current.removeAllEventListeners();
+      es.current.close();
     };
   };
+
+  const handleStopGeneration = useCallback(() => {
+    es.current && es.current.close();
+  }, []);
+
+  const renderUsagePie = useMemo(
+    () => !ownedSubscription && <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
+    [openUsageModal, ownedSubscription],
+  );
+
+  const renderNewIcon = useCallback(props => <Octicons name="plus" size={22} color={theme.dark ? 'white' : 'black'} />, [theme.dark]);
+
+  const renderNewConvoButton = useMemo(
+    () => currentConversation && <IconButton size={22} onPress={handleNewConversation} icon={renderNewIcon} />,
+    [currentConversation, handleNewConversation, renderNewIcon],
+  );
+
+  const renderHeaderLeft = useCallback(() => (isAssistantChat ? <BackButton /> : renderUsagePie), [isAssistantChat, renderUsagePie]);
+
+  const renderHeaderRight = useCallback(
+    () =>
+      isAssistantChat ? (
+        <>
+          {renderUsagePie}
+          {renderNewConvoButton}
+        </>
+      ) : (
+        renderNewConvoButton
+      ),
+    [isAssistantChat, renderNewConvoButton, renderUsagePie],
+  );
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //
 
@@ -250,17 +290,24 @@ const ChatScreen = ({ route, navigation }) => {
   // ------------------------ EFFECTS ------------------------ //
   useEffect(() => {
     navigation.setOptions({
-      headerLeft: () => !ownedSubscription && <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
-      headerRight: () =>
-        currentConversation && (
-          <IconButton
-            size={22}
-            onPress={handleNewConversation}
-            icon={props => <Octicons name="plus" size={22} color={theme.dark ? 'white' : 'black'} />}
-          />
-        ),
+      headerLeft: renderHeaderLeft,
+      headerRight: renderHeaderRight,
+      headerTitle: isAssistantChat && assistant.name,
     });
-  }, [openUsageModal, navigation, currentConversation, ownedSubscription, setOpenUsageModal]);
+  }, [
+    assistant,
+    navigation,
+    routeParams,
+    openUsageModal,
+    renderUsagePie,
+    isAssistantChat,
+    ownedSubscription,
+    renderHeaderLeft,
+    renderHeaderRight,
+    setOpenUsageModal,
+    currentConversation,
+    renderNewConvoButton,
+  ]);
 
   useEffect(() => {
     route?.params?.conversation && setCurrentConversation(route.params.conversation.id);
@@ -268,6 +315,7 @@ const ChatScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     currentConversation && refreshMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentConversation]);
   // ----------------------- /EFFECTS ------------------------ //
   // --------------------------------------------------------- //
@@ -276,51 +324,49 @@ const ChatScreen = ({ route, navigation }) => {
   // ----------------------- RENDERERS ----------------------- //
   return (
     <View style={styles.container} onPress={() => Keyboard.dismiss()}>
-      <View style={{ flex: 1 }}>
+      <View style={styles.flex1}>
         {_.isEmpty(messages) ? (
-          <Intro value={value} setValue={setValue} handleSubmit={handleSubmitPrompt} />
+          <Intro value={value} setValue={setValue} handleSubmit={handleSubmitPrompt} isAssistant={isAssistantChat} questions={assistant?.questions} />
         ) : (
           <Conversation data={messages} loading={loadingMsgs} />
         )}
 
-        {/* {loading && (
+        {loading && (
           <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, alignItems: 'center' }}>
-            <RegularButton
-              title="Stop"
-              leftIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />}
-              onPress={() => null}
-            />
+            <RegularButton title="Stop" startIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />} onPress={handleStopGeneration} />
           </View>
-        )} */}
+        )}
       </View>
       <Divider style={styles.divider} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : 'height'} keyboardVerticalOffset={100}>
-        <TextInput
-          multiline
-          value={value}
-          mode="outlined"
-          style={styles.input}
-          returnKeyType="send"
-          verticalAlign="middle"
-          outlineColor="transparent"
-          onSubmitEditing={Keyboard.dismiss}
-          onChangeText={handleValueChange}
-          activeOutlineColor="transparent"
-          placeholder={_t('send_a_message')}
-          underlineStyle={{ display: 'none' }}
-          placeholderTextColor={theme.colors.secondary}
-          right={
-            <TextInput.Icon
-              centered
-              icon="send"
-              disabled={_.isEmpty(value)}
-              iconColor={theme.colors.secondary}
-              onPress={() => handleSubmitPrompt(value)}
-              style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
-            />
-          }
-        />
-      </KeyboardAvoidingView>
+      <SafeAreaView>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : 'height'} keyboardVerticalOffset={100}>
+          <TextInput
+            multiline
+            value={value}
+            mode="outlined"
+            style={styles.input}
+            returnKeyType="send"
+            verticalAlign="middle"
+            outlineColor="transparent"
+            onSubmitEditing={Keyboard.dismiss}
+            onChangeText={handleValueChange}
+            activeOutlineColor="transparent"
+            placeholder={_t('send_a_message')}
+            underlineStyle={styles.underline}
+            placeholderTextColor={theme.colors.secondary}
+            right={
+              <TextInput.Icon
+                centered
+                icon="send"
+                disabled={_.isEmpty(value)}
+                iconColor={theme.colors.secondary}
+                onPress={() => handleSubmitPrompt(value)}
+                style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
+              />
+            }
+          />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </View>
   );
 };

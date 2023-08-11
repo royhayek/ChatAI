@@ -1,35 +1,47 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
+import { Platform, TouchableOpacity, View } from 'react-native';
+import { IconButton, Text, useTheme } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 import PT from 'prop-types';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
-import { IconButton, Portal, Text, useTheme } from 'react-native-paper';
 import CustomBottomSheet from 'app/src/components/BottomSheet';
-import { useNavigation } from '@react-navigation/native';
-import { Platform, TouchableOpacity, View } from 'react-native';
 import RegularButton from '../Buttons/Regular';
 import Pie from './Pie';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { setLastRewardedDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
+import { DAILY_USAGE_LIMIT, REWARDED_AD_UNIT_ID } from 'app/src/config/constants';
 import { appName } from 'app/src/helpers';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
-import { useSelector } from 'react-redux';
-import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
 const _t = (key, options) => t(`usage.${key}`, options);
 
+const rewarded = RewardedAd.createForAdRequest(REWARDED_AD_UNIT_ID, {
+  requestNonPersonalizedAdsOnly: true,
+});
+
 const Usage = ({ open, onClose }) => {
   // --------------------------------------------------------- //
   // ----------------------- REDUX --------------------------- //
+  const dispatch = useDispatch();
+  const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
+  const updateLastRewardedDate = useCallback(payload => dispatch(setLastRewardedDate(payload)), [dispatch]);
+
   const messagesCount = useSelector(state => state.app.messagesCount);
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
@@ -41,23 +53,13 @@ const Usage = ({ open, onClose }) => {
   const bottomSheetRef = useRef();
   const navigation = useNavigation();
 
-  const availableMsgsCount = useMemo(
-    () => DAILY_USAGE_LIMIT - messagesCount,
-    [messagesCount],
-  );
+  const [loadedAd, setLoadedAd] = useState(false);
 
-  const snapPoints = useMemo(
-    () => [
-      availableMsgsCount > 0
-        ? Platform.OS === 'android'
-          ? '55%'
-          : '45%'
-        : Platform.OS === 'android'
-        ? '58%'
-        : '48%',
-    ],
-    [],
-  );
+  const availableMsgsCount = useMemo(() => DAILY_USAGE_LIMIT - messagesCount, [messagesCount]);
+  const snapPoints = useMemo(() => {
+    return [availableMsgsCount > 0 ? (Platform.OS === 'android' ? '65%' : '55%') : Platform.OS === 'android' ? '18%' : '58%'];
+  }, []);
+  const today = new Date().toISOString().split('T')[0];
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -74,12 +76,43 @@ const Usage = ({ open, onClose }) => {
     handleSheetClose();
     navigation.navigate('Subscription');
   }, []);
+
+  const handleEarnClick = useCallback(() => {
+    rewarded.show();
+  }, []);
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- EFFECTS ------------------------- //
   useEffect(() => {
     open && bottomSheetRef.current && bottomSheetRef.current.expand();
   }, [open]);
+
+  useEffect(() => {
+    const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, async () => {
+      const lastSentDate = await SecureStore.getItemAsync('lastRewardedDate');
+      !_.isEqual(lastSentDate, today) && setLoadedAd(true);
+    });
+
+    const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async () => {
+      await SecureStore.setItemAsync('messageCount', (messagesCount + 1).toString());
+      await SecureStore.setItemAsync('lastRewardedDate', today);
+      updateMessagesCount(messagesCount + 1);
+      updateLastRewardedDate(today);
+    });
+
+    // Start loading the rewarded ad straight away
+    rewarded.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+    };
+  }, []);
+  // ----------------------- /EFFECTS ------------------------ //
+  // --------------------------------------------------------- //
 
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
@@ -89,10 +122,7 @@ const Usage = ({ open, onClose }) => {
         <Pie radius={16} activeStrokeWidth={7} inActiveStrokeWidth={6} />
       </TouchableOpacity>
 
-      <CustomBottomSheet
-        sheetRef={bottomSheetRef}
-        snapPoints={snapPoints}
-        onClose={handleSheetClose}>
+      <CustomBottomSheet sheetRef={bottomSheetRef} snapPoints={snapPoints} onClose={handleSheetClose}>
         <View style={styles.bottomSheetHeader}>
           <Text variant="titleMedium" style={styles.bottomSheetTitle}>
             {_t('daily_free_usage')}
@@ -102,33 +132,37 @@ const Usage = ({ open, onClose }) => {
             rippleColor="transparent"
             style={{ position: 'absolute' }}
             onPress={handleSheetClose}
-            icon={() => (
-              <Ionicons
-                name="md-close"
-                size={25}
-                color={theme.dark ? 'white' : 'black'}
-              />
-            )}
+            icon={() => <Ionicons name="md-close" size={25} color={theme.dark ? 'white' : 'black'} />}
           />
         </View>
         <View style={styles.bottomSheetContent}>
-          <Pie
-            hasSuffix
-            radius={58}
-            activeStrokeWidth={15}
-            inActiveStrokeWidth={14}
-          />
+          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />
           <View style={styles.freeMessagesTextBg}>
             <Text variant="labelMedium" style={{ textAlign: 'center' }}>
-              {availableMsgsCount > 0
-                ? _t('free_messages_daily', { name: appName, number: 5 })
-                : _t('hit_limit')}
+              {availableMsgsCount > 0 ? _t('free_messages_daily', { name: appName, number: 5 }) : _t('hit_limit')}
             </Text>
           </View>
+          <RegularButton title={_t('get_unlimited')} style={styles.upgradeButton} onPress={handleGetUnlimitedPress} />
           <RegularButton
-            title={_t('get_unlimited')}
-            style={styles.upgradeButton}
-            onPress={handleGetUnlimitedPress}
+            title={_t('earn')}
+            disabled={_.isEqual(availableMsgsCount, DAILY_USAGE_LIMIT) || !rewarded.loaded || !loadedAd}
+            style={styles.earnButton}
+            onPress={handleEarnClick}
+            backgroundColors={['#FF3F3F', '#FF2020', '#FF0000']}
+            startIcon={
+              <LottieView
+                autoSize
+                autoPlay
+                style={[
+                  {
+                    marginRight: 8,
+                    height: 25,
+                    transform: [{ scale: 1.1 }],
+                  },
+                ]}
+                source={require('../../../assets/play-video.json')}
+              />
+            }
           />
         </View>
       </CustomBottomSheet>

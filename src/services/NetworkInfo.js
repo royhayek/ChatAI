@@ -9,6 +9,7 @@ const _t = (key, options) => t(`network.${key}`, options);
 
 const NetworkInfo = () => {
   const theme = useTheme();
+  const styles = makeStyles(theme);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -34,12 +35,12 @@ const NetworkInfo = () => {
   if (showModal) {
     return (
       <Modal visible dismissable={false}>
-        <View style={styles.container(theme)}>
+        <View style={styles.container}>
           <Image source={require('../../assets/no-internet.png')} style={styles.icon} />
           <Text variant="titleSmall" style={styles.text}>
-            f{_t('no_internet_connection')}
+            {_t('no_internet_connection')}
           </Text>
-          <RegularButton title="Retry Connecting" onPress={handleRetryPress} />
+          <RegularButton title={_t('retry_connecting')} onPress={handleRetryPress} />
         </View>
       </Modal>
     );
@@ -50,8 +51,8 @@ const NetworkInfo = () => {
 
 export default NetworkInfo;
 
-const styles = theme =>
-  StyleSheet({
+const makeStyles = theme =>
+  StyleSheet.create({
     container: {
       width: '80%',
       padding: 24,
@@ -59,7 +60,7 @@ const styles = theme =>
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.dark ? theme.colors.background : theme.colors.backdrop,
+      backgroundColor: theme.colors.background,
     },
     icon: {
       width: 85,
@@ -69,5 +70,6 @@ const styles = theme =>
     text: {
       marginBottom: 5,
       fontWeight: 'bold',
+      color: theme.dark ? theme.colors.white : theme.colors.black,
     },
   });
