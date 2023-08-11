@@ -9,6 +9,9 @@ export const REWARDED_AD_UNIT_ID = Platform.select({
   android: __DEV__ ? TestIds.REWARDED : 'ca-app-pub-1469570455778464/6899068074',
 });
 
+export const APPLEAPPID = '2193813192';
+export const GOOGLEPACKAGENAME = 'com.mywebsite.myapp';
+
 export const PRIVACY_POLICY = 'https://code-blow.com/chatAi/privacy_policy.html'; // Place your privacy policy link here
 export const TERMS_AND_CONDITIONS = 'https://code-blow.com/chatAi/terms.html'; //  Place your privacy policy link here
 

@@ -12,17 +12,17 @@ import Programming from 'app/src/lib/icons/Assistants/Programming';
 import Translation from 'app/src/lib/icons/Assistants/Translation';
 
 export const ASSISTANTS = [
-  {
-    id: 1,
-    icon: <Weather />,
-    name: 'Weather',
-    description: 'Get real-time weather updates and forecasts for your location or any city worldwide',
-    questions: [
-      "What's the weather forecast for tomorrow in New York City?",
-      'Will it rain in London this weekend?',
-      'What is the current temperature in Sydney?',
-    ],
-  },
+  // {
+  //   id: 1,
+  //   icon: <Weather />,
+  //   name: 'Weather',
+  //   description: 'Get real-time weather updates and forecasts for your location or any city worldwide',
+  //   questions: [
+  //     "What's the weather forecast for tomorrow in New York City?",
+  //     'Will it rain in London this weekend?',
+  //     'What is the current temperature in Sydney?',
+  //   ],
+  // },
   {
     id: 2,
     icon: <Travel />,

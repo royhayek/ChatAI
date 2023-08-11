@@ -59,7 +59,6 @@ const Usage = ({ open, onClose }) => {
   const snapPoints = useMemo(() => {
     return [availableMsgsCount > 0 ? (Platform.OS === 'android' ? '65%' : '55%') : Platform.OS === 'android' ? '18%' : '58%'];
   }, []);
-  const today = new Date().toISOString().split('T')[0];
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -89,16 +88,19 @@ const Usage = ({ open, onClose }) => {
     open && bottomSheetRef.current && bottomSheetRef.current.expand();
   }, [open]);
 
+  console.debug('availableMsgsCount', availableMsgsCount);
   useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+
     const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, async () => {
       const lastSentDate = await SecureStore.getItemAsync('lastRewardedDate');
       !_.isEqual(lastSentDate, today) && setLoadedAd(true);
     });
 
     const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async () => {
-      await SecureStore.setItemAsync('messageCount', (messagesCount + 1).toString());
+      await SecureStore.setItemAsync('messageCount', (availableMsgsCount + 1).toString());
       await SecureStore.setItemAsync('lastRewardedDate', today);
-      updateMessagesCount(messagesCount + 1);
+      updateMessagesCount(availableMsgsCount + 1);
       updateLastRewardedDate(today);
     });
 
@@ -145,7 +147,7 @@ const Usage = ({ open, onClose }) => {
           <RegularButton title={_t('get_unlimited')} style={styles.upgradeButton} onPress={handleGetUnlimitedPress} />
           <RegularButton
             title={_t('earn')}
-            disabled={_.isEqual(availableMsgsCount, DAILY_USAGE_LIMIT) || !rewarded.loaded || !loadedAd}
+            // disabled={_.isEqual(availableMsgsCount, DAILY_USAGE_LIMIT) || !rewarded.loaded || !loadedAd}
             style={styles.earnButton}
             onPress={handleEarnClick}
             backgroundColors={['#FF3F3F', '#FF2020', '#FF0000']}

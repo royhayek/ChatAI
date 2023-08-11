@@ -14,7 +14,8 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.codeblow.chatai"
+      "bundleIdentifier": "com.codeblow.chatai",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,6 +41,8 @@
     },
     "plugins": [
       "./plugins/withAndroidStrategiesPlugin.js",
+      "@react-native-firebase/app",
+      "@react-native-firebase/firestore",
       "react-native-iap",
       [
         "expo-build-properties",
