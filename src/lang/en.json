@@ -12,7 +12,8 @@
     },
     "chat": {
       "examples": "Examples",
-      "send_a_message": "Send a message"
+      "send_a_message": "Send a message",
+      "loading_messages": "Loading messages, please wait..."
     },
     "history": {
       "delete_your_history": "Are you sure you want to delete your history?",
@@ -31,6 +32,7 @@
       "faq": "Frequently Asked Questions",
       "privacy_policy": "Privacy Policy",
       "terms": "Terms & Conditions",
+      "rate_app": "Rate App",
       "upgrade_to_plus": "Upgrade to Plus!",
       "expanded_access": "Extended access to {{name}} features",
       "languages": {

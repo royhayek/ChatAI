@@ -8,8 +8,9 @@ import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/sli
 import { changeLanguage, isRTL, t } from '../../config/i18n';
 import makeStyles from './styles';
 import { appName } from 'app/src/helpers';
-import SubscriptionManager from 'app/src/services/SubscriptionManager';
 import { getAvailablePurchases } from 'react-native-iap';
+import Rate, { AndroidMarket } from 'react-native-rate';
+import { APPLEAPPID, GOOGLEPACKAGENAME } from 'app/src/config/constants';
 
 const _t = (key, options) => t(`settings.${key}`, options);
 
@@ -25,31 +26,30 @@ const SettingsScreen = ({ navigation }) => {
   const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
   const [openLangMenu, setOpenLangMenu] = useState(false);
-  const [openUpgradeModal, setOpenUpgradeModal] = useState(false);
 
-  const handleUpgradePress = useCallback(() => navigation.navigate('Subscription'), []);
+  const toggleLangMenu = useCallback(() => setOpenLangMenu(cur => !cur), []);
 
-  const toggleLangMenu = useCallback(() => {
-    setOpenLangMenu(cur => !cur);
-  }, []);
-
-  const toggleUpgradeModal = useCallback(() => {
-    setOpenUpgradeModal(cur => !cur);
-  }, []);
-
-  const navigateToInfo = useCallback((type, options) => {
-    navigation.navigate('Info', { type, name: _t(type, options) });
-  }, []);
+  const navigateToInfo = useCallback(
+    (type, options) => {
+      navigation.navigate('Info', { type, name: _t(type, options) });
+    },
+    [navigation],
+  );
 
   const navigateToSubscription = useCallback(() => {
     navigation.navigate('Subscription');
-  }, []);
+  }, [navigation]);
 
-  const updateLanguage = useCallback(lng => {
-    dispatch(setLanguage(lng));
-    changeLanguage(lng);
-    toggleLangMenu();
-  }, []);
+  const updateLanguage = useCallback(
+    lng => {
+      dispatch(setLanguage(lng));
+      changeLanguage(lng);
+      toggleLangMenu();
+    },
+    [dispatch, toggleLangMenu],
+  );
+
+  const handleUpgradePress = useCallback(() => navigation.navigate('Subscription'), []);
 
   const handleRestorePurchase = useCallback(async () => {
     try {
@@ -60,6 +60,26 @@ const SettingsScreen = ({ navigation }) => {
     } catch (error) {
       console.error('[handleRestorePurchase] - error :: ', error);
     }
+  }, [updateOwnedSubscription]);
+
+  const handleRateApp = useCallback(() => {
+    const options = {
+      AppleAppID: APPLEAPPID,
+      GooglePackageName: GOOGLEPACKAGENAME,
+      preferredAndroidMarket: AndroidMarket.Google,
+      preferInApp: true,
+      openAppStoreIfInAppFails: true,
+    };
+    Rate.rate(options, (success, errorMessage) => {
+      if (success) {
+        // This technically only tells us if the user successfully went to the Review Page. Whether they actually did anything, we do not know.
+        console.debug('User successfully rated the app');
+      }
+      if (errorMessage) {
+        // errorMessage comes from the native code. Useful for debugging, but probably not for users to view
+        console.error(`Example page Rate.rate() error: ${errorMessage}`);
+      }
+    });
   }, []);
 
   const toggleThemeMode = useCallback(() => dispatch(setThemeMode(isDark ? 'light' : 'dark')), [dispatch, isDark]);
@@ -72,12 +92,7 @@ const SettingsScreen = ({ navigation }) => {
         </Text>
         <Text style={styles.upgradeDesc}> {_t('expanded_access', { name: appName })}</Text>
       </View>
-      <Ionicons
-        name="ios-chevron-forward-sharp"
-        size={28}
-        color="white"
-        style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
-      />
+      <Ionicons name="ios-chevron-forward-sharp" size={28} color="white" style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }} />
     </TouchableOpacity>
   );
 
@@ -156,16 +171,18 @@ const SettingsScreen = ({ navigation }) => {
           icon: 'ios-information-circle-outline',
           onPress: () => navigateToInfo('terms', { name: appName }),
         },
+        {
+          key: 'rate',
+          title: _t('rate_app'),
+          icon: 'ios-star-outline',
+          onPress: () => handleRateApp(),
+        },
       ],
     },
   ];
 
   const renderContent = () => (
-    <ScrollView
-      style={styles.content}
-      contentContainerStyle={{ paddingBottom: 30 }}
-      overScrollMode="never"
-      showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 30 }} overScrollMode="never" showsVerticalScrollIndicator={false}>
       {_.map(sections(), ({ title, items }) => (
         <View key={title}>
           <Text variant="titleSmall" style={styles.title}>
@@ -179,11 +196,7 @@ const SettingsScreen = ({ navigation }) => {
                   <Text variant="labelLarge">{title}</Text>
                 </View>
                 {isSwitch ? (
-                  <Switch
-                    value={value}
-                    onValueChange={onPress}
-                    style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
-                  />
+                  <Switch value={value} onValueChange={onPress} style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }} />
                 ) : isMenu ? (
                   <Menu
                     visible={openLangMenu}
@@ -193,12 +206,7 @@ const SettingsScreen = ({ navigation }) => {
                     anchor={
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Text>{value}</Text>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={18}
-                          style={styles.arrowIcon}
-                          color={theme.dark ? 'white' : 'black'}
-                        />
+                        <Ionicons name="chevron-forward" size={18} style={styles.arrowIcon} color={theme.dark ? 'white' : 'black'} />
                       </View>
                     }>
                     {_.map(languages, ({ locale, title }) => (
@@ -206,12 +214,7 @@ const SettingsScreen = ({ navigation }) => {
                     ))}
                   </Menu>
                 ) : (
-                  <Ionicons
-                    name="chevron-forward"
-                    size={18}
-                    style={styles.arrowIcon}
-                    color={theme.dark ? 'white' : 'black'}
-                  />
+                  <Ionicons name="chevron-forward" size={18} style={styles.arrowIcon} color={theme.dark ? 'white' : 'black'} />
                 )}
               </TouchableOpacity>
             ))}

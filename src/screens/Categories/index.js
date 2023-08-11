@@ -22,7 +22,7 @@ const CategoriesScreen = ({ navigation }) => {
 
   // --------------------------------------------------------- //
   // ----------------------- CALLBACKS ----------------------- //
-  const handleAssistantPress = useCallback(id => navigation.navigate('Chat', { id }), [navigation]);
+  const handleAssistantPress = useCallback(id => navigation.navigate('Chat', { id, fromAssistants: true }), [navigation]);
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //
 

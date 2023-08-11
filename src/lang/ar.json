@@ -12,7 +12,8 @@
     },
     "chat": {
       "examples": "أمثلة",
-      "send_a_message": "ارسل رسالة"
+      "send_a_message": "ارسل رسالة",
+      "loading_messages": "جاري تحميل الرسائل ، يرجى الانتظار ..."
     },
     "history": {
       "delete_your_history": "هل أنت متأكد أنك تريد حذف السجل الخاص بك؟",
@@ -31,6 +32,7 @@
       "faq": "الأسئلة المتداولة",
       "privacy_policy": "سياسة الخصوصية",
       "terms": "الشروط والأحكام",
+      "rate_app": "قيم التطبيق",
       "upgrade_to_plus": "قم بالترقية إلى Plus!",
       "expanded_access": "توسيع الوصول إلى ميزات {{name}}",
       "languages": {

@@ -21,25 +21,31 @@ const HistoryScreen = ({ navigation }) => {
   const bottomSheetRef = useRef();
   const snapPoints = ['25%'];
 
-  const refreshConversations = useCallback(refreshing => {
-    !refreshing && setLoading(true);
-    getConversations().then(conversations => {
-      setConversations(conversations);
+  const refreshConversations = useCallback(isRefreshing => {
+    !isRefreshing && setLoading(true);
+    getConversations().then(convos => {
+      setConversations(convos);
       setRefreshing(false);
-      !refreshing && setLoading(false);
+      !isRefreshing && setLoading(false);
     });
   }, []);
 
   const handleSheetClose = useCallback(() => bottomSheetRef.current.close(), []);
 
-  const handleTextPress = useCallback(conversation => {
-    navigation.navigate('Chat', { conversation });
-  }, []);
+  const handleTextPress = useCallback(
+    conversation => {
+      navigation.navigate('ChatStack', { screen: 'Chat', params: { conversation } });
+    },
+    [navigation],
+  );
 
-  const handleDeleteHistory = useCallback(async id => {
-    await deleteConversation(id).then(() => console.debug('History Deleted Successfully'));
-    refreshConversations(false);
-  }, []);
+  const handleDeleteHistory = useCallback(
+    async id => {
+      await deleteConversation(id).then(() => console.debug('History Deleted Successfully'));
+      refreshConversations(false);
+    },
+    [refreshConversations],
+  );
 
   const handleDeletePress = useCallback(() => bottomSheetRef.current.expand(), []);
 
@@ -47,7 +53,7 @@ const HistoryScreen = ({ navigation }) => {
     await deleteAllConversations().then(() => console.debug('History Deleted Successfully'));
     refreshConversations(false);
     handleSheetClose();
-  });
+  }, [handleSheetClose, refreshConversations]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -63,6 +69,7 @@ const HistoryScreen = ({ navigation }) => {
 
   useEffect(() => {
     refreshConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

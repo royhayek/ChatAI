@@ -24,7 +24,7 @@ export default makeStyles = theme =>
       marginVertical: 16,
     },
     item: {
-      marginVertical: 8,
+      marginVertical: 9,
       flexDirection: 'row',
       justifyContent: 'space-between',
     },
