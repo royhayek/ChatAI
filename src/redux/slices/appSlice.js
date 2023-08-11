@@ -1,10 +1,11 @@
-import { createSlice, nanoid } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   language: 'en',
   themeMode: 'dark',
   messagesCount: 0,
   lastSentDate: null,
+  lastRewardedDate: null,
   subscriptions: [],
   ownedSubscription: null,
 };
@@ -25,6 +26,9 @@ export const appSlice = createSlice({
     setLastSentDate: (state, action) => {
       state.lastSentDate = action.payload;
     },
+    setLastRewardedDate: (state, action) => {
+      state.lastRewardedDate = action.payload;
+    },
     setPaidSubscriptions: (state, action) => {
       state.subscriptions = action.payload;
     },
@@ -34,13 +38,7 @@ export const appSlice = createSlice({
   },
 });
 
-export const {
-  setLanguage,
-  setThemeMode,
-  setMessagesCount,
-  setLastSentDate,
-  setPaidSubscriptions,
-  setOwnedSubscription,
-} = appSlice.actions;
+export const { setLanguage, setThemeMode, setMessagesCount, setLastSentDate, setLastRewardedDate, setPaidSubscriptions, setOwnedSubscription } =
+  appSlice.actions;
 
 export default appSlice.reducer;

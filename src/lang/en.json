@@ -59,10 +59,12 @@
       "daily_free_usage": "Daily Free Usage",
       "free_messages_daily": "Chat with {{name}} for free! {{number}} messages daily",
       "get_unlimited": "Get Unlimited with AI Plus",
-      "hit_limit": "It looks like you've hit your limit for today! Come back tomorrow for more or upgrade to enjoy unlimited chat!"
+      "hit_limit": "It looks like you've hit your limit for today! Come back tomorrow for more or upgrade to enjoy unlimited chat!",
+      "earn": "Watch Short Ad"
     },
     "network": {
-      "no_internet_connection": "Pas de connexion Internet"
+      "no_internet_connection": "No Internet Connection",
+      "retry_connecting": "Retry Connecting"
     }
   }
 }

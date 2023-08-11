@@ -1,6 +1,13 @@
+import { Platform } from 'react-native';
+import { TestIds } from 'react-native-google-mobile-ads';
+
 export const DAILY_USAGE_LIMIT = 5;
 
-export const REWARDED_AD_UNIT_ID = 'Place your rewarded ad unit id here';
+// Place your rewarded ad unit ids here
+export const REWARDED_AD_UNIT_ID = Platform.select({
+  ios: __DEV__ ? TestIds.REWARDED : 'ca-app-pub-1469570455778464/4453655521',
+  android: __DEV__ ? TestIds.REWARDED : 'ca-app-pub-1469570455778464/6899068074',
+});
 
 export const PRIVACY_POLICY = 'https://code-blow.com/chatAi/privacy_policy.html'; // Place your privacy policy link here
 export const TERMS_AND_CONDITIONS = 'https://code-blow.com/chatAi/terms.html'; //  Place your privacy policy link here
