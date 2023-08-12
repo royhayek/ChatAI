@@ -18,6 +18,6 @@ export default theme =>
       opacity: 0.4,
       borderRadius: 100,
       position: 'absolute',
-      backgroundColor: theme.dark ? '#000000' : '#FFFFFF',
+      backgroundColor: theme.dark ? theme.colors.black : theme.colors.white,
     },
   });

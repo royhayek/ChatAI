@@ -40,9 +40,6 @@
       "url": "https://u.expo.dev/c944d619-e2a3-4ebc-b1a1-d9adfa9acfc5"
     },
     "plugins": [
-      "./plugins/withAndroidStrategiesPlugin.js",
-      "@react-native-firebase/app",
-      "@react-native-firebase/firestore",
       "react-native-iap",
       [
         "expo-build-properties",

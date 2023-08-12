@@ -1,3 +1,6 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -7,6 +10,8 @@ export const appName = Constants.expoConfig.name;
 
 export const isAndroid = Platform.OS === 'android';
 
+// --------------------------------------------------------- //
+// ---------------------- HELPERS -------------------------- //
 export const wait = timeout => {
   return new Promise(resolve => {
     setTimeout(resolve, timeout);
@@ -51,3 +56,5 @@ export const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize 
   const paddingToBottom = 20;
   return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
 };
+// --------------------- /HELPERS -------------------------- //
+// --------------------------------------------------------- //

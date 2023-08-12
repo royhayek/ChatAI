@@ -1,21 +1,38 @@
-import _ from 'lodash';
-import { ActivityIndicator, FAB, Text, useTheme } from 'react-native-paper';
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React, { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, FAB, Text, useTheme } from 'react-native-paper';
 import { FlatList, View } from 'react-native';
+import _ from 'lodash';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENTS ------------------------ //
+// ------------------------------------------------------------ //
 import Message from '../Message';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
-
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
 const _t = (key, options) => t(`chat.${key}`, options);
 
 const Conversation = ({ data, loading }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
 
   const flatListRef = useRef();
 
   const [fabEnabled, setFabEnabled] = useState(true);
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   const renderLoading = useMemo(
     () => (
       <View style={styles.loadingContainer}>
@@ -49,10 +66,10 @@ const Conversation = ({ data, loading }) => {
     () =>
       !loading && (
         <FAB
-          style={styles.fab}
-          icon={fabEnabled ? 'arrow-down-circle' : 'arrow-up-circle'}
           size="small"
           variant="secondary"
+          style={styles.fab}
+          icon={fabEnabled ? 'arrow-down-circle' : 'arrow-up-circle'}
           onPress={() => {
             if (fabEnabled) {
               flatListRef.current.scrollToEnd({ animated: true });

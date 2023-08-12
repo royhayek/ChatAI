@@ -1,6 +1,9 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert, Platform } from 'react-native';
-import _ from 'lodash';
 import {
   clearTransactionIOS,
   endConnection,
@@ -15,15 +18,29 @@ import {
   purchaseUpdatedListener,
   setup,
 } from 'react-native-iap';
-import { useDispatch } from 'react-redux';
-import { isAndroid } from '../helpers';
+import _ from 'lodash';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
 import { setOwnedSubscription, setPaidSubscriptions } from '../redux/slices/appSlice';
-
+import { getConfiguration } from '../redux/selectors';
+import { isAndroid } from '../helpers';
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
 const SubscriptionManager = () => {
+  // --------------------------------------------------------- //
+  // ------------------------ REDUX -------------------------- //
   const dispatch = useDispatch();
   const updateSubscriptions = useCallback(payload => dispatch(setPaidSubscriptions(payload)), [dispatch]);
   const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
+  const config = useSelector(getConfiguration);
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
   const fetchAvailablePurchases = async () => {
     try {
       const history = await getPurchaseHistory();
@@ -36,9 +53,14 @@ const SubscriptionManager = () => {
       console.debug('[fetchAvailablePurchases] - ERROR :: ', error);
     }
   };
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- EFFECTS ------------------------- //
   useEffect(() => {
     setup({ storekitMode: 'STOREKIT2_MODE' });
+
     // Initialize the InAppPurchase module
     initConnection()
       .then(async () => {
@@ -52,8 +74,8 @@ const SubscriptionManager = () => {
 
         // Load available products (subscription plans) from the app stores
         const productIds = Platform.select({
-          android: ['chatai_pro', 'chatai_pro_monthly', 'chatai_pro_yearly'],
-          ios: ['ios_subscription_weekly', 'ios_subscription_monthly', 'ios_subscription_yearly'],
+          android: config?.productIds?.android,
+          ios: config?.productIds?.ios,
         });
         return getSubscriptions({ skus: productIds });
       })
@@ -73,7 +95,6 @@ const SubscriptionManager = () => {
       if (receipt) {
         try {
           const acknowledgeResult = await finishTransaction({ purchase });
-
           console.info('acknowledgeResult', acknowledgeResult);
         } catch (error) {
           console.debug('finishTransaction', error);
@@ -85,9 +106,7 @@ const SubscriptionManager = () => {
       }
     });
 
-    const purchaseError = purchaseErrorListener(error => {
-      Alert.alert('purchase error', JSON.stringify(error));
-    });
+    const purchaseError = purchaseErrorListener(error => Alert.alert('purchase error', JSON.stringify(error)));
 
     const promotedProduct = promotedProductListener(productId => Alert.alert('Product promoted', productId));
 
@@ -98,7 +117,10 @@ const SubscriptionManager = () => {
 
       endConnection();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config?.productIds?.android, config?.productIds?.ios]);
+  // ----------------------- /EFFECTS ------------------------ //
+  // --------------------------------------------------------- //
 
   return null;
 };

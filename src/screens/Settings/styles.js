@@ -1,7 +1,7 @@
 import { isRTL } from '../../config/i18n';
 import { StyleSheet } from 'react-native';
 
-export default makeStyles = theme =>
+export default theme =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -10,11 +10,25 @@ export default makeStyles = theme =>
     content: {
       marginHorizontal: 16,
     },
+    contentContainer: { paddingBottom: 30 },
+    iconAndTitle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    languageMenuContent: {
+      shadowOpacity: 0.2,
+      backgroundColor: theme.colors.background,
+    },
+    anchor: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
     card: {
       paddingVertical: 10,
       paddingHorizontal: 16,
       borderRadius: 8,
-      backgroundColor: theme.dark ? theme.colors.background : 'white',
+      backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
       shadowColor: theme.colors.shadow,
       shadowOpacity: theme.dark ? 0.6 : 0,
       shadowRadius: 3,
@@ -29,7 +43,7 @@ export default makeStyles = theme =>
       justifyContent: 'space-between',
     },
     endIcon: {
-      color: theme.dark ? 'white' : 'black',
+      color: theme.dark ? theme.colors.white : theme.colors.black,
       marginEnd: 15,
     },
     arrowIcon: {
@@ -47,12 +61,12 @@ export default makeStyles = theme =>
       justifyContent: 'space-between',
     },
     upgradeTitle: {
-      color: 'white',
+      color: theme.colors.white,
       fontWeight: 'bold',
     },
     upgradeDesc: {
       marginTop: 5,
-      color: 'white',
+      color: theme.colors.white,
     },
     modalContainer: {
       margin: 24,

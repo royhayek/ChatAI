@@ -23,19 +23,21 @@ import Intro from './components/Intro';
 // ------------------------------------------------------------ //
 import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
 import { setLastSentDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
+import { getChatMessages, getConfiguration } from 'app/src/redux/selectors';
 import { setMessages, updateAnswer } from 'app/src/redux/slices/chatSlice';
-import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
-import { getChatMessages } from 'app/src/redux/selectors';
-import { ASSISTANTS } from '../Categories/data';
+import { Endpoints } from 'app/src/config/constants';
+import { ASSISTANTS } from '../Assistants/data';
 import { isRTL, t } from '../../config/i18n';
+import { BASE_URL, API_KEY } from '@env';
 import makeStyles from './styles';
-import { API_KEY } from '@env';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
 const _t = (key, options) => t(`chat.${key}`, options);
 
 const ChatScreen = ({ route, navigation }) => {
+  // --------------------------------------------------------- //
+  // ------------------------ REDUX -------------------------- //
   const dispatch = useDispatch();
   const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
   const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
@@ -45,19 +47,27 @@ const ChatScreen = ({ route, navigation }) => {
   const messagesCount = useSelector(state => state.app.messagesCount);
   const ownedSubscription = useSelector(state => state.app.ownedSubscription);
   const messages = useSelector(getChatMessages);
+  const config = useSelector(getConfiguration);
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
+
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
 
-  const [currentConversation, setCurrentConversation] = useState(route?.params?.conversation?.id ?? null);
+  const es = useRef();
+
   const [value, setValue] = useState();
-  // const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [openUsageModal, setOpenUsageModal] = useState(false);
+  const [currentConversation, setCurrentConversation] = useState(route?.params?.conversation?.id ?? null);
 
-  const es = useRef();
+  const routeParams = route.params;
+  const isAssistantChat = _.has(routeParams, 'id') && route.params.fromAssistants;
+  const assistant = _.find(ASSISTANTS, { id: routeParams?.id });
+  const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
 
   const apiMessages = useMemo(
     () =>
@@ -70,10 +80,6 @@ const ChatScreen = ({ route, navigation }) => {
       ),
     [messages],
   );
-
-  const routeParams = route.params;
-  const isAssistantChat = _.has(routeParams, 'id') && route.params.fromAssistants;
-  const assistant = _.find(ASSISTANTS, { id: routeParams?.id });
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -128,7 +134,7 @@ const ChatScreen = ({ route, navigation }) => {
     async message => {
       Keyboard.dismiss();
 
-      if (messagesCount >= DAILY_USAGE_LIMIT && !ownedSubscription) {
+      if (messagesCount >= dailyMessagesLimit && !ownedSubscription) {
         setOpenUsageModal(true);
         return;
       }
@@ -159,10 +165,10 @@ const ChatScreen = ({ route, navigation }) => {
 
       let newContent = '';
 
-      let url = 'https://api.openai.com/v1/chat/completions';
+      const url = `${BASE_URL}${Endpoints.TEXT_COMPLETIONS_TURBO}`;
 
       // Parameters to pass to the API
-      let data = {
+      const data = {
         model: 'gpt-3.5-turbo',
         messages: [...apiMessages, { content: message, role: 'user' }],
         temperature: 0.66,
@@ -253,7 +259,8 @@ const ChatScreen = ({ route, navigation }) => {
         es.current.close();
       };
     },
-    [apiMessages, currentConversation, messagesCount, ownedSubscription, updateMessageAnswer, updateMessageCount, updateMessages],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [apiMessages, currentConversation, dailyMessagesLimit, messagesCount, ownedSubscription],
   );
 
   const handleStopGeneration = useCallback(() => {
@@ -266,7 +273,10 @@ const ChatScreen = ({ route, navigation }) => {
     [openUsageModal, ownedSubscription],
   );
 
-  const renderNewIcon = useCallback(props => <Octicons name="plus" size={22} color={theme.dark ? 'white' : 'black'} />, [theme.dark]);
+  const renderNewIcon = useCallback(
+    props => <Octicons name="plus" size={22} color={theme.dark ? theme.colors.white : theme.colors.black} />,
+    [theme.colors.black, theme.colors.white, theme.dark],
+  );
 
   const renderNewConvoButton = useMemo(
     () => currentConversation && <IconButton size={22} onPress={handleNewConversation} icon={renderNewIcon} />,

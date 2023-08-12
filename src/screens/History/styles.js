@@ -14,14 +14,6 @@ export default theme =>
     listContent: {
       padding: 16,
     },
-    content: {
-      flex: 1,
-      marginStart: 12,
-    },
-    date: {
-      marginTop: 5,
-      color: theme.colors.secondary,
-    },
     modalTitle: {
       textAlign: 'center',
       fontWeight: 'bold',
@@ -33,4 +25,10 @@ export default theme =>
       flexDirection: 'row',
       justifyContent: 'center',
     },
+    emptyImage: {
+      width: 100,
+      height: 100,
+      marginBottom: 20,
+    },
+    emptyText: { fontWeight: 'bold' },
   });

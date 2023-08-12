@@ -22,7 +22,8 @@ import Pie from './Pie';
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
 import { setLastRewardedDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
-import { DAILY_USAGE_LIMIT, REWARDED_AD_UNIT_ID } from 'app/src/config/constants';
+import { REWARDED_AD_UNIT_ID } from 'app/src/config/constants';
+import { getConfiguration } from 'app/src/redux/selectors';
 import { appName } from 'app/src/helpers';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
@@ -43,6 +44,8 @@ const Usage = ({ open, onClose }) => {
   const updateLastRewardedDate = useCallback(payload => dispatch(setLastRewardedDate(payload)), [dispatch]);
 
   const messagesCount = useSelector(state => state.app.messagesCount);
+  const config = useSelector(getConfiguration);
+  const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 
@@ -55,7 +58,7 @@ const Usage = ({ open, onClose }) => {
 
   const [loadedAd, setLoadedAd] = useState(false);
 
-  const availableMsgsCount = useMemo(() => DAILY_USAGE_LIMIT - messagesCount, [messagesCount]);
+  const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [messagesCount]);
   const snapPoints = useMemo(() => {
     return [availableMsgsCount > 0 ? (Platform.OS === 'android' ? '65%' : '55%') : Platform.OS === 'android' ? '18%' : '58%'];
   }, []);
@@ -88,7 +91,6 @@ const Usage = ({ open, onClose }) => {
     open && bottomSheetRef.current && bottomSheetRef.current.expand();
   }, [open]);
 
-  console.debug('availableMsgsCount', availableMsgsCount);
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
 
@@ -134,11 +136,11 @@ const Usage = ({ open, onClose }) => {
             rippleColor="transparent"
             style={{ position: 'absolute' }}
             onPress={handleSheetClose}
-            icon={() => <Ionicons name="md-close" size={25} color={theme.dark ? 'white' : 'black'} />}
+            icon={() => <Ionicons name="md-close" size={25} color={theme.dark ? theme.colors.white : theme.colors.black} />}
           />
         </View>
         <View style={styles.bottomSheetContent}>
-          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />
+          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />s
           <View style={styles.freeMessagesTextBg}>
             <Text variant="labelMedium" style={{ textAlign: 'center' }}>
               {availableMsgsCount > 0 ? _t('free_messages_daily', { name: appName, number: 5 }) : _t('hit_limit')}
@@ -147,7 +149,7 @@ const Usage = ({ open, onClose }) => {
           <RegularButton title={_t('get_unlimited')} style={styles.upgradeButton} onPress={handleGetUnlimitedPress} />
           <RegularButton
             title={_t('earn')}
-            // disabled={_.isEqual(availableMsgsCount, DAILY_USAGE_LIMIT) || !rewarded.loaded || !loadedAd}
+            disabled={_.isEqual(availableMsgsCount, dailyMessagesLimit) || !rewarded.loaded || !loadedAd}
             style={styles.earnButton}
             onPress={handleEarnClick}
             backgroundColors={['#FF3F3F', '#FF2020', '#FF0000']}

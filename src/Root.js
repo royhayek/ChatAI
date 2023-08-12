@@ -1,25 +1,38 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { NavigationContainer } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { connectAsync } from 'expo-in-app-purchases';
+import * as Notifications from 'expo-notifications';
+import { PaperProvider } from 'react-native-paper';
+import { withIAPContext } from 'react-native-iap';
+import { ref, onValue } from 'firebase/database';
+import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import _ from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { PaperProvider } from 'react-native-paper';
-import { useDispatch, useSelector } from 'react-redux';
-import { darkTheme, lightTheme } from './lib/theme';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENTS ------------------------ //
+// ------------------------------------------------------------ //
+import SplashScreen from './screens/Splash';
 import RootNavigation from './navigation';
-import * as Notifications from 'expo-notifications';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
+import { setMessagesCount, setLastSentDate, setConfig } from './redux/slices/appSlice';
+import SubscriptionManager from './services/SubscriptionManager';
 import { registerForPushNotificationsAsync } from './helpers';
+import { darkTheme, lightTheme } from './lib/theme';
+import NetworkInfo from './services/NetworkInfo';
+import { FIREBASE_DB } from 'app/firebaseConfig';
 import { createTables } from './data/localdb';
 import { changeLocale } from './config/i18n';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import * as SecureStore from 'expo-secure-store';
-import { setMessagesCount, setLastSentDate } from './redux/slices/appSlice';
-import { connectAsync } from 'expo-in-app-purchases';
-import { StyleSheet, View } from 'react-native';
-import LottieView from 'lottie-react-native';
-import SubscriptionManager from './services/SubscriptionManager';
-import { withIAPContext } from 'react-native-iap';
-import NetworkInfo from './services/NetworkInfo';
-
+import { Firebase } from './config/constants';
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -29,23 +42,47 @@ Notifications.setNotificationHandler({
 });
 
 const Root = () => {
+  // --------------------------------------------------------- //
+  // ------------------------ REDUX -------------------------- //
   const dispatch = useDispatch();
   const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
   const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
+  const updateConfiguration = useCallback(payload => dispatch(setConfig(payload)), [dispatch]);
 
   const themeMode = useSelector(state => state.app.themeMode);
   const language = useSelector(state => state.app.language);
-  const isDark = _.isEqual(themeMode, 'dark');
-  const theme = isDark ? darkTheme : lightTheme;
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+
   const notificationListener = useRef();
   const responseListener = useRef();
 
+  const isDark = _.isEqual(themeMode, 'dark');
+  const theme = isDark ? darkTheme : lightTheme;
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
+  const getConfiguration = useCallback(async () => {
+    try {
+      const configRef = ref(FIREBASE_DB, Firebase.CONFIGURATION_REF);
+      onValue(configRef, snapshot => {
+        const data = snapshot.val();
+        updateConfiguration(data);
+      });
+    } catch (e) {
+      console.error('[getConfiguration] - ERROR :: ', e);
+    }
+  }, [updateConfiguration]);
+
   // Function to initialize the message count from storage
-  const initializeMessageCount = async () => {
+  const initializeMessageCount = useCallback(async () => {
     try {
       const lastSentDate = await SecureStore.getItemAsync('lastSentDate');
       const today = new Date().toISOString().split('T')[0];
@@ -59,36 +96,26 @@ const Root = () => {
         await SecureStore.deleteItemAsync('messageCount');
       }
     } catch (error) {
-      console.error('Error retrieving message count:', error);
+      console.error('[initializeMessageCount] - ERROR :: ', error);
     }
-  };
+  }, [updateLastSentDate, updateMessagesCount]);
 
   const initAppPurchases = useCallback(async () => {
-    // Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
-
-    // if (Platform.OS === 'ios') {
-    //   Purchases.configure({ apiKey: 'appl_uYrqzqUSMhQTDEdsFOgvwZLIKHL' });
-    // } else if (Platform.OS === 'android') {
-    //   Purchases.configure({ apiKey: 'goog_AyUmBLfDDGlCJkjRsrShwZuJtlC' });
-    // }
-
-    await connectAsync();
+    try {
+      await connectAsync();
+    } catch (error) {
+      console.error('[initAppPurchases] - ERROR :: ', error);
+    }
   }, []);
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
 
-  const handleAnimationFinish = useCallback(() => setShowSplash(false), []);
-
+  // --------------------------------------------------------- //
+  // ----------------------- EFFECTS ------------------------- //
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
-
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
-
-    initializeMessageCount();
+    notificationListener.current = Notifications.addNotificationReceivedListener(noti => setNotification(noti));
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => console.log(response));
 
     return () => {
       Notifications.removeNotificationSubscription(notificationListener.current);
@@ -96,37 +123,27 @@ const Root = () => {
     };
   }, []);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
+    getConfiguration();
+    initializeMessageCount();
     changeLocale(language);
     createTables();
     initAppPurchases();
   }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
+  // ----------------------- /EFFECTS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   return (
     <PaperProvider theme={theme}>
       <BottomSheetModalProvider>
         <NavigationContainer>
           <StatusBar style={theme.dark ? 'light' : 'dark'} />
           <RootNavigation />
-          {showSplash && (
-            <View
-              style={{
-                flex: 1,
-                ...StyleSheet.absoluteFillObject,
-                backgroundColor: 'white',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <StatusBar style="dark" />
-              <LottieView
-                autoPlay
-                loop={false}
-                style={{ width: 130, height: 130 }}
-                onAnimationFinish={handleAnimationFinish}
-                source={require('../assets/splash-lottie.json')}
-              />
-            </View>
-          )}
+          <SplashScreen />
           <NetworkInfo />
           <SubscriptionManager />
         </NavigationContainer>

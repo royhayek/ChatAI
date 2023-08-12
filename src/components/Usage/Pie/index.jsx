@@ -7,9 +7,9 @@ import { useTheme } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 import PT from 'prop-types';
 // ------------------------------------------------------------ //
-// ------------------------ COMPONENTS ------------------------ //
+// ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { DAILY_USAGE_LIMIT } from 'app/src/config/constants';
+import { getConfiguration } from 'app/src/redux/selectors';
 import { isRTL } from 'app/src/config/i18n';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
@@ -18,6 +18,8 @@ const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
   // --------------------------------------------------------- //
   // ----------------------- REDUX --------------------------- //
   const messagesCount = useSelector(state => state.app.messagesCount);
+  const config = useSelector(getConfiguration);
+  const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 
@@ -25,8 +27,8 @@ const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
 
-  const suffix = ` / ${DAILY_USAGE_LIMIT}`;
-  const availableMsgsCount = useMemo(() => DAILY_USAGE_LIMIT - messagesCount, [messagesCount]);
+  const suffix = ` / ${dailyMessagesLimit}`;
+  const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [messagesCount]);
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -36,7 +38,7 @@ const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
     <CircularProgress
       radius={radius}
       value={availableMsgsCount}
-      maxValue={DAILY_USAGE_LIMIT}
+      maxValue={dailyMessagesLimit}
       inActiveStrokeOpacity={0.5}
       valueSuffixStyle={{ fontSize: 16 }}
       valuePrefixStyle={{ fontSize: 16 }}

@@ -1,26 +1,46 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Image, RefreshControl, TouchableOpacity, View } from 'react-native';
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Image, RefreshControl, View } from 'react-native';
 import { ActivityIndicator, IconButton, Text, useTheme } from 'react-native-paper';
-import CustomBottomSheet from 'app/src/components/BottomSheet';
 import { Ionicons } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
-import { deleteAllConversations, deleteConversation, getConversations } from 'app/src/data/localdb';
-import makeStyles from './styles';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENTS ------------------------ //
+// ------------------------------------------------------------ //
+import CustomBottomSheet from 'app/src/components/BottomSheet';
 import RegularButton from 'app/src/components/Buttons/Regular';
+import HistoryCard from './components/HistoryCard';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
+import { deleteAllConversations, getConversations } from 'app/src/data/localdb';
 import { t } from 'app/src/config/i18n';
-
+import makeStyles from './styles';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENT ------------------------- //
+// ------------------------------------------------------------ //
 const _t = (key, options) => t(`history.${key}`, options);
 
 const HistoryScreen = ({ navigation }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
+
+  const bottomSheetRef = useRef();
+
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [conversations, setConversations] = useState([]);
 
-  const bottomSheetRef = useRef();
-  const snapPoints = ['25%'];
+  const snapPoints = useMemo(() => ['25%'], []);
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
   const refreshConversations = useCallback(isRefreshing => {
     !isRefreshing && setLoading(true);
     getConversations().then(convos => {
@@ -32,21 +52,6 @@ const HistoryScreen = ({ navigation }) => {
 
   const handleSheetClose = useCallback(() => bottomSheetRef.current.close(), []);
 
-  const handleTextPress = useCallback(
-    conversation => {
-      navigation.navigate('ChatStack', { screen: 'Chat', params: { conversation } });
-    },
-    [navigation],
-  );
-
-  const handleDeleteHistory = useCallback(
-    async id => {
-      await deleteConversation(id).then(() => console.debug('History Deleted Successfully'));
-      refreshConversations(false);
-    },
-    [refreshConversations],
-  );
-
   const handleDeletePress = useCallback(() => bottomSheetRef.current.expand(), []);
 
   const handleDeleteAllHistory = useCallback(async () => {
@@ -55,88 +60,78 @@ const HistoryScreen = ({ navigation }) => {
     handleSheetClose();
   }, [handleSheetClose, refreshConversations]);
 
+  const renderDeleteIcon = useCallback(
+    () => conversations.length > 0 && <Octicons name="trash" size={22} color={theme.dark ? theme.colors.white : theme.colors.black} />,
+    [conversations.length, theme.colors.black, theme.colors.white, theme.dark],
+  );
+
+  const renderHeaderRight = useCallback(
+    () => <IconButton size={22} onPress={handleDeletePress} icon={renderDeleteIcon} />,
+    [handleDeletePress, renderDeleteIcon],
+  );
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ------------------------ EFFECTS ------------------------ //
   useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <IconButton
-          size={22}
-          onPress={handleDeletePress}
-          icon={() => conversations.length > 0 && <Octicons name="trash" size={22} color={theme.dark ? 'white' : 'black'} />}
-        />
-      ),
-    });
-  }, [conversations.length, handleDeletePress, navigation, theme.dark]);
+    navigation.setOptions({ headerRight: renderHeaderRight });
+  }, [navigation, renderHeaderRight]);
 
   useEffect(() => {
     refreshConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // ----------------------- /EFFECTS ------------------------ //
+  // --------------------------------------------------------- //
 
-  return (
-    <View style={styles.container}>
-      {conversations.length > 0 ? (
-        <FlatList
-          data={conversations}
-          key={item => item.id}
-          refreshing={refreshing}
-          refreshControl={
-            <RefreshControl
-              // colors={theme.dark ? [theme.colors.white, theme.colors.black] : [theme.colors.black]}
-              tintColor={theme.dark ? theme.colors.white : theme.colors.black}
-              refreshing={refreshing}
-              onRefresh={() => refreshConversations(true)}
-            />
-          }
-          // onRefresh={refreshConversations}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item, index }) => (
-            <>
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleTextPress(item)}
-                style={{
-                  flexDirection: 'row',
-                  marginBottom: 15,
-                  borderWidth: 1,
-                  borderRadius: 8,
-                  padding: 10,
-                  alignItems: 'center',
-                  borderColor: theme.colors.secondary,
-                  backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.background,
-                }}>
-                <Ionicons name="md-chatbox-outline" size={20} color={theme.dark ? 'white' : 'black'} />
-                <View style={styles.content}>
-                  <Text variant="labelLarge">{item?.title}</Text>
-                  <Text variant="bodySmall" style={styles.date}>
-                    {item?.createdAt}
-                  </Text>
-                </View>
-                <IconButton
-                  size={17}
-                  mode="outlined"
-                  onPress={() => handleDeleteHistory(item?.id)}
-                  containerColor={theme.colors.background}
-                  icon={props => <Ionicons name="ios-close" size={20} color={theme.dark ? 'white' : 'black'} />}
-                />
-              </TouchableOpacity>
-            </>
-          )}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          {loading ? (
-            <ActivityIndicator />
-          ) : (
-            <>
-              <Image source={require('../../../assets/empty-history.png')} style={{ width: 100, height: 100, marginBottom: 20 }} />
-              <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                {_t('no_history_found')}
-              </Text>
-            </>
-          )}
-        </View>
-      )}
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
+  const renderRefreshControl = useMemo(
+    () => (
+      <RefreshControl
+        refreshing={refreshing}
+        tintColor={theme.dark ? theme.colors.white : theme.colors.black}
+        onRefresh={() => refreshConversations(true)}
+      />
+    ),
+    [refreshConversations, refreshing, theme.colors.black, theme.colors.white, theme.dark],
+  );
 
+  const renderList = useMemo(
+    () => (
+      <FlatList
+        data={conversations}
+        key={item => item.id}
+        refreshing={refreshing}
+        refreshControl={renderRefreshControl}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item, index }) => <HistoryCard item={item} index={index} refresh={refreshConversations} />}
+      />
+    ),
+    [refreshConversations, conversations, refreshing, renderRefreshControl, styles.listContent],
+  );
+
+  const renderLoadingOrEmpty = useMemo(
+    () => (
+      <View style={styles.emptyContainer}>
+        {loading ? (
+          <ActivityIndicator />
+        ) : (
+          <>
+            <Image source={require('../../../assets/empty-history.png')} style={styles.emptyImage} />
+            <Text variant="bodyMedium" style={styles.emptyText}>
+              {_t('no_history_found')}
+            </Text>
+          </>
+        )}
+      </View>
+    ),
+    [loading, styles.emptyContainer, styles.emptyImage, styles.emptyText],
+  );
+
+  const renderConfBottomSheet = useMemo(
+    () => (
       <CustomBottomSheet sheetRef={bottomSheetRef} snapPoints={snapPoints} onClose={handleSheetClose}>
         <Text variant="bodyLarge" style={styles.modalTitle}>
           {_t('delete_your_history')}
@@ -144,12 +139,20 @@ const HistoryScreen = ({ navigation }) => {
         <View style={styles.modalButtons}>
           <RegularButton
             title={_t('delete')}
-            startIcon={<Octicons name="trash" size={18} color={theme.colors.white} />}
             onPress={handleDeleteAllHistory}
+            startIcon={<Octicons name="trash" size={18} color={theme.colors.white} />}
           />
           <RegularButton title={_t('cancel')} startIcon={<Ionicons name="close" size={18} color={theme.colors.white} />} onPress={handleSheetClose} />
         </View>
       </CustomBottomSheet>
+    ),
+    [handleDeleteAllHistory, handleSheetClose, snapPoints, styles.modalButtons, styles.modalTitle, theme.colors.white],
+  );
+
+  return (
+    <View style={styles.container}>
+      {conversations.length > 0 ? renderList : renderLoadingOrEmpty}
+      {renderConfBottomSheet}
     </View>
   );
 };
