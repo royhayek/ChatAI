@@ -1,21 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
+import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, Text, useTheme } from 'react-native-paper';
+import { View, Image, StyleSheet } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENTS ------------------------ //
+// ------------------------------------------------------------ //
 import RegularButton from '../components/Buttons/Regular';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
 import { t } from '../config/i18n';
-
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
 const _t = (key, options) => t(`network.${key}`, options);
 
 const NetworkInfo = () => {
-  const theme = useTheme();
-  const styles = makeStyles(theme);
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const [showModal, setShowModal] = useState(false);
 
+  const theme = useTheme();
+  const styles = makeStyles(theme);
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
+  const handleRetryPress = useCallback(() => {
+    NetInfo.fetch().then(state => state.isConnected && setShowModal(true));
+  }, []);
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- EFFECTS ------------------------- //
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      // Alert.alert(`Connection type, ${state.type}`);
-      // Alert.alert(`Is connected?', ${state.isConnected}`);
       if (!state.isConnected) {
         setShowModal(true);
       } else {
@@ -27,11 +51,11 @@ const NetworkInfo = () => {
       unsubscribe();
     };
   }, []);
+  // ----------------------- /EFFECTS ------------------------ //
+  // --------------------------------------------------------- //
 
-  const handleRetryPress = () => {
-    NetInfo.fetch().then(state => state.isConnected && setShowModal(true));
-  };
-
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   if (showModal) {
     return (
       <Modal visible dismissable={false}>

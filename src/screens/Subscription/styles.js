@@ -1,15 +1,13 @@
 import { StyleSheet } from 'react-native';
 
-export default makeStyles = theme =>
+export default theme =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    flex1: {
-      flex: 1,
-    },
     scrollViewContent: {
+      flex: 1,
       padding: 16,
     },
     title: {
@@ -24,7 +22,7 @@ export default makeStyles = theme =>
       marginHorizontal: 8,
       paddingVertical: 24,
       paddingHorizontal: 16,
-      backgroundColor: theme.dark ? theme.colors.backdrop : 'white',
+      backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.white,
     },
     benefitContainer: {
       flexDirection: 'row',
@@ -40,7 +38,7 @@ export default makeStyles = theme =>
       color: theme.colors.secondary,
     },
     benefitIcon: {
-      color: theme.dark ? 'white' : 'black',
+      color: theme.dark ? theme.colors.white : theme.colors.white,
     },
     plansContainer: {
       gap: 8,
@@ -67,6 +65,25 @@ export default makeStyles = theme =>
     },
     cancelText: {
       marginTop: 8,
+      textAlign: 'center',
+      color: theme.colors.secondary,
+    },
+    emptyContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    lottie: {
+      width: 150,
+      height: 150,
+      alignSelf: 'center',
+    },
+    noSubscriptionsText: {
+      textAlign: 'center',
+      marginBottom: 10,
+      fontWeight: 'bold',
+    },
+    referText: {
       textAlign: 'center',
       color: theme.colors.secondary,
     },

@@ -30,7 +30,9 @@ const BackButton = ({ title, onPress, ...props }) => {
       size={18}
       style={styles.container}
       onPress={() => navigation.goBack()}
-      icon={() => <LeftChevron color={theme.dark ? 'white' : 'black'} style={{ transform: [{ rotateY: isRTL ? '180deg' : '0deg' }] }} />}
+      icon={() => (
+        <LeftChevron color={theme.dark ? theme.colors.white : theme.colors.black} style={{ transform: [{ rotateY: isRTL ? '180deg' : '0deg' }] }} />
+      )}
     />
   );
 };

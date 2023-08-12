@@ -1,17 +1,28 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React, { useCallback, useMemo } from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CategoriesScreen from '../screens/Categories';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENTS ------------------------ //
+// ------------------------------------------------------------ //
+import SubscriptionScreen from '../screens/Subscription';
+import AssistantsScreen from '../screens/Assistants';
+import BackButton from '../components/Buttons/Back';
 import SettingsScreen from '../screens/Settings';
 import HistoryScreen from '../screens/History';
 import ChatScreen from '../screens/Chat';
 import InfoScreen from '../screens/Info';
-import SubscriptionScreen from '../screens/Subscription';
-import BackButton from '../components/Buttons/Back';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
 import { t } from '../config/i18n';
-
+// ------------------------------------------------------------ //
+// ------------------------- COMPONENT ------------------------ //
+// ------------------------------------------------------------ //
 const _t = key => t(`navigation.${key}`);
 
 const Tab = createBottomTabNavigator();
@@ -22,19 +33,25 @@ const HistoryStack = createNativeStackNavigator();
 const SettingsStack = createNativeStackNavigator();
 
 const RootNavigation = () => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   const renderHeaderLeft = useCallback(props => (props.canGoBack ? <BackButton /> : null), []);
 
   const screenOptions = useMemo(
     () => ({
       headerShown: true,
-      headerTitleStyle: { color: theme.dark ? 'white' : 'black' },
+      headerTitleStyle: { color: theme.dark ? theme.colors.white : theme.colors.black },
       headerStyle: { backgroundColor: theme.colors.background },
       headerShadowVisible: false,
       headerLeft: renderHeaderLeft,
     }),
-    [renderHeaderLeft, theme.colors.background, theme.dark],
+    [renderHeaderLeft, theme.colors.background, theme.colors.black, theme.colors.white, theme.dark],
   );
 
   const ChatStackScreen = useCallback(
@@ -58,7 +75,7 @@ const RootNavigation = () => {
   const CategoriesStackScreen = useCallback(
     () => (
       <CategoriesStack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
-        <CategoriesStack.Screen name="Categories" component={CategoriesScreen} options={{ title: _t('categories'), ...screenOptions }} />
+        <CategoriesStack.Screen name="Categories" component={AssistantsScreen} options={{ title: _t('categories'), ...screenOptions }} />
       </CategoriesStack.Navigator>
     ),
     [screenOptions],

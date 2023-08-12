@@ -13,7 +13,7 @@ export default theme =>
       borderBottomStartRadius: 18,
       backgroundColor: '#2C2C2C',
     },
-    questionText: { color: 'white' },
+    questionText: { color: theme.colors.white },
     answer: {
       marginVertical: 7,
       marginHorizontal: 14,
@@ -30,16 +30,16 @@ export default theme =>
 export const markdownStyles = theme => ({
   text: {
     ...theme.fonts.labelLarge,
-    color: theme.dark ? 'white' : 'black',
+    color: theme.dark ? theme.colors.white : theme.colors.black,
     lineHeight: 23,
   },
   blockquote: {
     ...theme.fonts.labelLarge,
-    color: theme.dark ? 'white' : 'black',
+    color: theme.dark ? theme.colors.white : theme.colors.black,
   },
   em: {
     ...theme.fonts.bodySmall,
-    color: theme.dark ? 'white' : 'black',
+    color: theme.dark ? theme.colors.white : theme.colors.black,
     fontWeight: '500',
     fontSize: 12.8,
     lineHeight: 19,
@@ -47,7 +47,7 @@ export const markdownStyles = theme => ({
   codespan: {
     ...theme.fonts.labelLarge,
     fontWeight: 'bold',
-    color: theme.dark ? 'white' : 'black',
+    color: theme.dark ? theme.colors.white : theme.colors.black,
     backgroundColor: theme.dark ? theme.colors.secondaryContainer : 'transparent',
   },
   link: {
@@ -65,7 +65,7 @@ export const markdownStyles = theme => ({
     flex: 1,
     borderWidth: 1,
     borderRadius: 2,
-    borderColor: 'white',
+    borderColor: theme.colors.white,
   },
   li: {
     ...theme.fonts.labelLarge,

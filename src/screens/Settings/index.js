@@ -1,32 +1,53 @@
-import { Ionicons } from '@expo/vector-icons';
-import _ from 'lodash';
-import React, { useCallback, useState } from 'react';
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { Menu, Switch, Text, useTheme } from 'react-native-paper';
-import { useDispatch, useSelector } from 'react-redux';
-import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/slices/appSlice';
-import { changeLanguage, isRTL, t } from '../../config/i18n';
-import makeStyles from './styles';
-import { appName } from 'app/src/helpers';
 import { getAvailablePurchases } from 'react-native-iap';
 import Rate, { AndroidMarket } from 'react-native-rate';
-import { APPLEAPPID, GOOGLEPACKAGENAME } from 'app/src/config/constants';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { Ionicons } from '@expo/vector-icons';
+import _ from 'lodash';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
+import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/slices/appSlice';
+import { changeLanguage, isRTL, t } from '../../config/i18n';
+import { getConfiguration } from 'app/src/redux/selectors';
+import { appName } from 'app/src/helpers';
+import makeStyles from './styles';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENT ------------------------- //
+// ------------------------------------------------------------ //
 const _t = (key, options) => t(`settings.${key}`, options);
 
 const SettingsScreen = ({ navigation }) => {
-  const theme = useTheme();
-  const styles = makeStyles(theme);
-  const themeMode = useSelector(state => state.app.themeMode);
-  const language = useSelector(state => state.app.language);
-  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
-
-  const isDark = _.isEqual(themeMode, 'dark');
+  // --------------------------------------------------------- //
+  // ----------------------- REDUX --------------------------- //
   const dispatch = useDispatch();
   const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
+  const config = useSelector(getConfiguration);
+  const language = useSelector(state => state.app.language);
+  const themeMode = useSelector(state => state.app.themeMode);
+  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
+  const theme = useTheme();
+  const styles = makeStyles(theme);
+
   const [openLangMenu, setOpenLangMenu] = useState(false);
 
+  const isDark = _.isEqual(themeMode, 'dark');
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
   const toggleLangMenu = useCallback(() => setOpenLangMenu(cur => !cur), []);
 
   const navigateToInfo = useCallback(
@@ -58,14 +79,14 @@ const SettingsScreen = ({ navigation }) => {
       const lastPurchase = _.last(purchases);
       updateOwnedSubscription(lastPurchase?.productId);
     } catch (error) {
-      console.error('[handleRestorePurchase] - error :: ', error);
+      console.error('[handleRestorePurchase] - ERROR :: ', error);
     }
   }, [updateOwnedSubscription]);
 
   const handleRateApp = useCallback(() => {
     const options = {
-      AppleAppID: APPLEAPPID,
-      GooglePackageName: GOOGLEPACKAGENAME,
+      AppleAppID: config?.other?.appleAppId,
+      GooglePackageName: config?.other?.googlePackageName,
       preferredAndroidMarket: AndroidMarket.Google,
       preferInApp: true,
       openAppStoreIfInAppFails: true,
@@ -80,154 +101,184 @@ const SettingsScreen = ({ navigation }) => {
         console.error(`Example page Rate.rate() error: ${errorMessage}`);
       }
     });
-  }, []);
+  }, [config?.other?.appleAppId, config?.other?.googlePackageName]);
 
   const toggleThemeMode = useCallback(() => dispatch(setThemeMode(isDark ? 'light' : 'dark')), [dispatch, isDark]);
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
 
-  const renderUpgradeButton = () => (
-    <TouchableOpacity onPress={handleUpgradePress} style={styles.upgradeContainer}>
-      <View>
-        <Text variant="bodyLarge" style={styles.upgradeTitle}>
-          {_t('upgrade_to_plus')}
-        </Text>
-        <Text style={styles.upgradeDesc}> {_t('expanded_access', { name: appName })}</Text>
-      </View>
-      <Ionicons name="ios-chevron-forward-sharp" size={28} color="white" style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }} />
-    </TouchableOpacity>
+  // --------------------------------------------------------- //
+  // ---------------------- RENDER VARS ---------------------- //
+  const languages = useMemo(
+    () => [
+      {
+        locale: 'en',
+        title: _t('languages.english'),
+      },
+      {
+        locale: 'fr',
+        title: _t('languages.french'),
+      },
+      {
+        locale: 'ar',
+        title: _t('languages.arabic'),
+      },
+    ],
+    [],
   );
 
-  const languages = [
-    {
-      locale: 'en',
-      title: _t('languages.english'),
-    },
-    {
-      locale: 'fr',
-      title: _t('languages.french'),
-    },
-    {
-      locale: 'ar',
-      title: _t('languages.arabic'),
-    },
-  ];
+  const sections = useMemo(
+    () => [
+      {
+        section: _t('general'),
+        items: [
+          {
+            key: 'language',
+            name: _t('language'),
+            icon: 'ios-language-outline',
+            value: _.find(languages, { locale: language })?.title,
+            onPress: () => toggleLangMenu(),
+            isMenu: true,
+          },
+          {
+            key: 'theme',
+            name: _t('theme'),
+            icon: 'ios-sunny-outline',
+            value: isDark,
+            onPress: toggleThemeMode,
+            isSwitch: true,
+          },
+        ],
+      },
+      {
+        section: _t('subscription'),
+        items: [
+          {
+            key: 'restore_purchase',
+            name: _t('restore_purchase'),
+            icon: 'ios-cart-outline',
+            onPress: handleRestorePurchase,
+          },
+          {
+            key: 'manage_subscription',
+            name: _t('manage_subscription'),
+            icon: 'ios-today-outline',
+            onPress: navigateToSubscription,
+          },
+        ],
+      },
+      {
+        section: _t('other'),
+        items: [
+          // {
+          //   key: 'faq',
+          //   name: _t('faq'),
+          //   icon: 'ios-help-circle-outline',
+          //   onPress: () => navigateToInfo('faq'),
+          // },
+          {
+            key: 'privacy_policy',
+            name: _t('privacy_policy'),
+            icon: 'ios-document-text-outline',
+            onPress: () => navigateToInfo('privacy_policy'),
+          },
+          {
+            key: 'terms',
+            name: _t('terms'),
+            icon: 'ios-information-circle-outline',
+            onPress: () => navigateToInfo('terms', { name: appName }),
+          },
+          {
+            key: 'rate',
+            name: _t('rate_app'),
+            icon: 'ios-star-outline',
+            onPress: () => handleRateApp(),
+          },
+        ],
+      },
+    ],
+    [handleRateApp, handleRestorePurchase, isDark, language, languages, navigateToInfo, navigateToSubscription, toggleLangMenu, toggleThemeMode],
+  );
+  // --------------------- /RENDER VARS ---------------------- //
+  // --------------------------------------------------------- //
 
-  const sections = () => [
-    {
-      title: _t('general'),
-      items: [
-        {
-          key: 'language',
-          title: _t('language'),
-          icon: 'ios-language-outline',
-          value: _.find(languages, { locale: language })?.title,
-          onPress: () => toggleLangMenu(),
-          isMenu: true,
-        },
-        {
-          key: 'theme',
-          title: _t('theme'),
-          icon: 'ios-sunny-outline',
-          value: isDark,
-          onPress: toggleThemeMode,
-          isSwitch: true,
-        },
-      ],
-    },
-    {
-      title: _t('subscription'),
-      items: [
-        {
-          key: 'restore_purchase',
-          title: _t('restore_purchase'),
-          icon: 'ios-cart-outline',
-          onPress: handleRestorePurchase,
-        },
-        {
-          key: 'manage_subscription',
-          title: _t('manage_subscription'),
-          icon: 'ios-today-outline',
-          onPress: navigateToSubscription,
-        },
-      ],
-    },
-    {
-      title: _t('other'),
-      items: [
-        // {
-        //   key: 'faq',
-        //   title: _t('faq'),
-        //   icon: 'ios-help-circle-outline',
-        //   onPress: () => navigateToInfo('faq'),
-        // },
-        {
-          key: 'privacy_policy',
-          title: _t('privacy_policy'),
-          icon: 'ios-document-text-outline',
-          onPress: () => navigateToInfo('privacy_policy'),
-        },
-        {
-          key: 'terms',
-          title: _t('terms'),
-          icon: 'ios-information-circle-outline',
-          onPress: () => navigateToInfo('terms', { name: appName }),
-        },
-        {
-          key: 'rate',
-          title: _t('rate_app'),
-          icon: 'ios-star-outline',
-          onPress: () => handleRateApp(),
-        },
-      ],
-    },
-  ];
-
-  const renderContent = () => (
-    <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 30 }} overScrollMode="never" showsVerticalScrollIndicator={false}>
-      {_.map(sections(), ({ title, items }) => (
-        <View key={title}>
-          <Text variant="titleSmall" style={styles.title}>
-            {title}
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
+  const renderUpgradeButton = useMemo(
+    () => (
+      <TouchableOpacity onPress={handleUpgradePress} style={styles.upgradeContainer}>
+        <View>
+          <Text variant="bodyLarge" style={styles.upgradeTitle}>
+            {_t('upgrade_to_plus')}
           </Text>
-          <View style={styles.card}>
-            {_.map(items, ({ key, icon, title, value, onPress, isSwitch, isMenu }) => (
-              <TouchableOpacity key={key} style={styles.item} onPress={onPress}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name={icon} size={24} style={styles.endIcon} />
-                  <Text variant="labelLarge">{title}</Text>
-                </View>
-                {isSwitch ? (
-                  <Switch value={value} onValueChange={onPress} style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }} />
-                ) : isMenu ? (
-                  <Menu
-                    visible={openLangMenu}
-                    onDismiss={toggleLangMenu}
-                    anchorPosition="bottom"
-                    contentStyle={{ backgroundColor: theme.colors.background, shadowOpacity: 0.2 }}
-                    anchor={
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text>{value}</Text>
-                        <Ionicons name="chevron-forward" size={18} style={styles.arrowIcon} color={theme.dark ? 'white' : 'black'} />
-                      </View>
-                    }>
-                    {_.map(languages, ({ locale, title }) => (
-                      <Menu.Item key={locale} onPress={() => updateLanguage(locale)} title={title} />
-                    ))}
-                  </Menu>
-                ) : (
-                  <Ionicons name="chevron-forward" size={18} style={styles.arrowIcon} color={theme.dark ? 'white' : 'black'} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.upgradeDesc}> {_t('expanded_access', { name: appName })}</Text>
         </View>
-      ))}
-    </ScrollView>
+        <Ionicons name="ios-chevron-forward-sharp" size={28} color="white" style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }} />
+      </TouchableOpacity>
+    ),
+    [handleUpgradePress, styles.upgradeContainer, styles.upgradeDesc, styles.upgradeTitle],
+  );
+
+  const renderContent = useMemo(
+    () => (
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer} overScrollMode="never" showsVerticalScrollIndicator={false}>
+        {_.map(sections, ({ section, items }) => (
+          <View key={section}>
+            <Text variant="titleSmall" style={styles.title}>
+              {section}
+            </Text>
+            <View style={styles.card}>
+              {_.map(items, ({ key, icon, name, value, onPress, isSwitch, isMenu }) => (
+                <TouchableOpacity key={key} style={styles.item} onPress={onPress}>
+                  <View style={styles.iconAndTitle}>
+                    <Ionicons name={icon} size={24} style={styles.endIcon} />
+                    <Text variant="labelLarge">{name}</Text>
+                  </View>
+                  {isSwitch ? (
+                    <Switch value={value} onValueChange={onPress} style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }} />
+                  ) : isMenu ? (
+                    <Menu
+                      visible={openLangMenu}
+                      onDismiss={toggleLangMenu}
+                      anchorPosition="bottom"
+                      contentStyle={styles.languageMenuContent}
+                      anchor={
+                        <View style={styles.anchor}>
+                          <Text>{value}</Text>
+                          <Ionicons
+                            name="chevron-forward"
+                            size={18}
+                            style={styles.arrowIcon}
+                            color={theme.dark ? theme.colors.white : theme.colors.black}
+                          />
+                        </View>
+                      }>
+                      {_.map(languages, ({ locale, title }) => (
+                        <Menu.Item key={locale} onPress={() => updateLanguage(locale)} title={title} />
+                      ))}
+                    </Menu>
+                  ) : (
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      style={styles.arrowIcon}
+                      color={theme.dark ? theme.colors.white : theme.colors.black}
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    ),
+    [styles, sections, languages, theme, openLangMenu, updateLanguage, toggleLangMenu],
   );
 
   return (
     <View style={styles.container}>
-      {!ownedSubscription && renderUpgradeButton()}
-      {renderContent()}
+      {!ownedSubscription && renderUpgradeButton}
+      {renderContent}
     </View>
   );
 };

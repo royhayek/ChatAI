@@ -1,14 +1,27 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
-import Markdown from 'react-native-marked';
 import { useTheme } from 'react-native-paper';
+import Markdown from 'react-native-marked';
+import { View, Text } from 'react-native';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
 import makeStyles, { markdownStyles } from './styles';
-import RegularButton from 'app/src/components/Buttons/Regular';
-
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENT ------------------------- //
+// ------------------------------------------------------------ //
 const Message = ({ question, answer }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   const renderQuestionText = useMemo(
     () => (
       <Text variant="labelLarge" style={styles.questionText}>

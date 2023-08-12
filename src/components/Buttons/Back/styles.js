@@ -6,10 +6,10 @@ export default theme =>
       borderRadius: 8,
       borderWidth: 1.5,
       marginHorizontal: 8,
-      borderColor: theme.dark ? 'white' : 'black',
+      borderColor: theme.dark ? theme.colors.white : theme.colors.black,
     },
     title: {
-      color: 'white',
+      color: theme.colors.white,
       fontWeight: 'bold',
     },
   });

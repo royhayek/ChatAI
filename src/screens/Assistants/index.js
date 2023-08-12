@@ -12,7 +12,7 @@ import makeStyles from './styles';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
-const CategoriesScreen = ({ navigation }) => {
+const AssistantsScreen = ({ navigation }) => {
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
@@ -51,4 +51,4 @@ const CategoriesScreen = ({ navigation }) => {
   );
 };
 
-export default CategoriesScreen;
+export default AssistantsScreen;

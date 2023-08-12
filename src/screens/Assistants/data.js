@@ -4,7 +4,6 @@ import Facts from 'app/src/lib/icons/Assistants/Facts';
 import Email from 'app/src/lib/icons/Assistants/Email';
 import Travel from 'app/src/lib/icons/Assistants/Travel';
 import Health from 'app/src/lib/icons/Assistants/Health';
-import Weather from 'app/src/lib/icons/Assistants/Weather';
 import Support from 'app/src/lib/icons/Assistants/Support';
 import Recipes from 'app/src/lib/icons/Assistants/Recipes';
 import Technology from 'app/src/lib/icons/Assistants/Technology';
@@ -12,19 +11,8 @@ import Programming from 'app/src/lib/icons/Assistants/Programming';
 import Translation from 'app/src/lib/icons/Assistants/Translation';
 
 export const ASSISTANTS = [
-  // {
-  //   id: 1,
-  //   icon: <Weather />,
-  //   name: 'Weather',
-  //   description: 'Get real-time weather updates and forecasts for your location or any city worldwide',
-  //   questions: [
-  //     "What's the weather forecast for tomorrow in New York City?",
-  //     'Will it rain in London this weekend?',
-  //     'What is the current temperature in Sydney?',
-  //   ],
-  // },
   {
-    id: 2,
+    id: 1,
     icon: <Travel />,
     name: 'Travel',
     description: 'Get destination recommendations, travel hacks, and packing guidelines',
@@ -35,7 +23,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 3,
+    id: 2,
     icon: <Email />,
     name: 'Email Writing',
     description: 'Get tips and guidance on writing effective and professional emails for various purposes',
@@ -46,7 +34,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 4,
+    id: 3,
     icon: <Translation />,
     name: 'Translation',
     description: 'Translate phrases or sentences between multiple languages quickly and accurately',
@@ -57,7 +45,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 5,
+    id: 4,
     icon: <Technology />,
     name: 'Technology',
     description: 'Stay up-to-date with the latest in the tech world',
@@ -68,7 +56,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 6,
+    id: 5,
     icon: <Programming />,
     name: 'Programming',
     description: 'Get coding examples, explanations, and programming concepts',
@@ -79,7 +67,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 7,
+    id: 6,
     icon: <Math />,
     name: 'Math',
     description: 'Need help with math problems? Get assistance with calculations, equations, and more',
@@ -90,7 +78,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 8,
+    id: 7,
     icon: <Recipes />,
     name: 'Recipes',
     description: 'Get guided through the steps to create mouthwatering dishes.',
@@ -101,7 +89,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 9,
+    id: 8,
     icon: <Facts />,
     name: 'Facts',
     description: 'Expand your knowledge with fascinating and fun facts on various topics',
@@ -113,7 +101,7 @@ export const ASSISTANTS = [
   },
 
   {
-    id: 10,
+    id: 9,
     icon: <Support />,
     name: 'Support',
     description: 'Resolve problems with your devices and software',
@@ -124,7 +112,7 @@ export const ASSISTANTS = [
     ],
   },
   {
-    id: 11,
+    id: 10,
     icon: <Health />,
     name: 'Health',
     description: 'Find workout routines, nutrition tips, and wellness advice',

@@ -28,7 +28,7 @@ export default theme =>
       shadowColor: theme.colors.shadow,
       shadowOpacity: theme.dark ? 0.6 : 0,
       shadowOffset: { width: 0, height: 0 },
-      backgroundColor: theme.dark ? theme.colors.backdrop : 'white',
+      backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.white,
     },
     example: {
       fontWeight: '500',

@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+  config: {},
   language: 'en',
   themeMode: 'dark',
   messagesCount: 0,
@@ -14,6 +15,9 @@ export const appSlice = createSlice({
   name: 'app',
   initialState: initialState,
   reducers: {
+    setConfig: (state, action) => {
+      state.config = action.payload;
+    },
     setLanguage: (state, action) => {
       state.language = action.payload;
     },
@@ -38,7 +42,15 @@ export const appSlice = createSlice({
   },
 });
 
-export const { setLanguage, setThemeMode, setMessagesCount, setLastSentDate, setLastRewardedDate, setPaidSubscriptions, setOwnedSubscription } =
-  appSlice.actions;
+export const {
+  setConfig,
+  setLanguage,
+  setThemeMode,
+  setMessagesCount,
+  setLastSentDate,
+  setLastRewardedDate,
+  setPaidSubscriptions,
+  setOwnedSubscription,
+} = appSlice.actions;
 
 export default appSlice.reducer;

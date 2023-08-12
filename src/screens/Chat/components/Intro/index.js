@@ -1,21 +1,42 @@
+// ------------------------------------------------------------ //
+// ------------------------- PACKAGES ------------------------- //
+// ------------------------------------------------------------ //
 import React, { useCallback } from 'react';
 import { View, TouchableOpacity, Keyboard } from 'react-native';
-import _ from 'lodash';
-import { useTheme } from 'react-native-paper';
+import { useTheme, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { Text } from 'react-native-paper';
-import makeStyles from './styles';
+import { useSelector } from 'react-redux';
+import _ from 'lodash';
+// ------------------------------------------------------------ //
+// ------------------------- UTILITIES ------------------------ //
+// ------------------------------------------------------------ //
+import { getConfiguration } from 'app/src/redux/selectors';
 import { t } from 'app/src/config/i18n';
-import { Examples } from 'app/src/config/constants';
-
+import makeStyles from './styles';
+// ------------------------------------------------------------ //
+// ------------------------ COMPONENT ------------------------- //
+// ------------------------------------------------------------ //
 const _t = (key, options) => t(`chat.${key}`, options);
 
 const Intro = ({ setValue, handleSubmit, isAssistant, questions }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- REDUX --------------------------- //
+  const config = useSelector(getConfiguration);
+  const language = useSelector(state => state.app.language);
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
 
-  const suggestions = isAssistant ? questions : Examples;
+  const suggestions = isAssistant ? questions : config?.examples?.[language];
+  // ----------------------- /STATICS ------------------------ //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- CALLBACKS ----------------------- //
   const handleExamplePress = useCallback(
     e => {
       setValue(null);
@@ -24,13 +45,17 @@ const Intro = ({ setValue, handleSubmit, isAssistant, questions }) => {
     },
     [setValue, handleSubmit],
   );
+  // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
 
+  // --------------------------------------------------------- //
+  // ----------------------- RENDERERS ----------------------- //
   return (
     <View style={styles.content} onPress={() => Keyboard.dismiss()}>
       <View style={styles.row}>
         {!isAssistant && (
           <>
-            <Ionicons name="ios-sunny-outline" size={24} color={theme.dark ? 'white' : 'black'} />
+            <Ionicons name="ios-sunny-outline" size={24} color={theme.dark ? theme.colors.white : theme.colors.black} />
             <View style={styles.hSpacer} />
           </>
         )}

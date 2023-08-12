@@ -9,13 +9,13 @@ export default theme =>
     },
     divider: { marginTop: 10 },
     input: {
-      maxHeight: 120,
-      justifyContent: 'center',
-      borderRadius: 8,
       marginTop: 6,
+      maxHeight: 120,
+      borderRadius: 8,
       marginBottom: 8,
       marginHorizontal: 16,
-      backgroundColor: theme.dark ? theme.colors.backdrop : 'white',
+      justifyContent: 'center',
+      backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.white,
     },
     underline: { display: 'none' },
     stopButton: {

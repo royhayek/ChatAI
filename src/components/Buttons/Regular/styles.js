@@ -14,7 +14,7 @@ export default theme =>
       justifyContent: 'center',
     },
     title: {
-      color: 'white',
+      color: theme.colors.white,
       fontWeight: 'bold',
       paddingHorizontal: 3,
     },
