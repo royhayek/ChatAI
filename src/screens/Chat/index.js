@@ -21,9 +21,9 @@ import Intro from './components/Intro';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { getChatMessages, getConfiguration, getLanguage, getMessagesCount, getOwnedSubscription } from 'app/src/redux/selectors';
 import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
 import { setLastSentDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
-import { getChatMessages, getConfiguration } from 'app/src/redux/selectors';
 import { setMessages, updateAnswer } from 'app/src/redux/slices/chatSlice';
 import { Endpoints } from 'app/src/config/constants';
 import { ASSISTANTS } from '../Assistants/data';
@@ -44,8 +44,8 @@ const ChatScreen = ({ route, navigation }) => {
   const updateMessages = useCallback(payload => dispatch(setMessages(payload)), [dispatch]);
   const updateMessageAnswer = useCallback(payload => dispatch(updateAnswer(payload)), [dispatch]);
 
-  const messagesCount = useSelector(state => state.app.messagesCount);
-  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
+  const ownedSubscription = useSelector(getOwnedSubscription);
+  const messagesCount = useSelector(getMessagesCount);
   const messages = useSelector(getChatMessages);
   const config = useSelector(getConfiguration);
   // ----------------------- /REDUX -------------------------- //
@@ -68,6 +68,7 @@ const ChatScreen = ({ route, navigation }) => {
   const isAssistantChat = _.has(routeParams, 'id') && route.params.fromAssistants;
   const assistant = _.find(ASSISTANTS, { id: routeParams?.id });
   const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
+  const language = useSelector(getLanguage);
 
   const apiMessages = useMemo(
     () =>
@@ -306,9 +307,9 @@ const ChatScreen = ({ route, navigation }) => {
     navigation.setOptions({
       headerLeft: renderHeaderLeft,
       headerRight: renderHeaderRight,
-      headerTitle: isAssistantChat && assistant?.name,
+      headerTitle: isAssistantChat && assistant?.name[language],
     });
-  }, [assistant?.name, isAssistantChat, navigation, renderHeaderLeft, renderHeaderRight]);
+  }, [assistant?.name, isAssistantChat, language, navigation, renderHeaderLeft, renderHeaderRight]);
 
   useEffect(() => {
     route?.params?.conversation && setCurrentConversation(route.params.conversation.id);
@@ -325,9 +326,15 @@ const ChatScreen = ({ route, navigation }) => {
   // ----------------------- RENDERERS ----------------------- //
   const renderIntro = useMemo(
     () => (
-      <Intro value={value} setValue={setValue} handleSubmit={handleSubmitPrompt} isAssistant={isAssistantChat} questions={assistant?.questions} />
+      <Intro
+        value={value}
+        setValue={setValue}
+        handleSubmit={handleSubmitPrompt}
+        isAssistant={isAssistantChat}
+        questions={assistant?.questions[language]}
+      />
     ),
-    [assistant?.questions, handleSubmitPrompt, isAssistantChat, value],
+    [assistant?.questions, handleSubmitPrompt, isAssistantChat, language, value],
   );
 
   const renderConversation = useMemo(() => <Conversation data={messages} loading={loadingMsgs} />, [loadingMsgs, messages]);

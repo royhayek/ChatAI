@@ -16,6 +16,7 @@ import RegularButton from 'app/src/components/Buttons/Regular';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { getOwnedSubscription, getSubscriptions } from 'app/src/redux/selectors';
 import { isAndroid } from 'app/src/helpers';
 import { t } from 'app/src/config/i18n';
 import { benefits } from './config';
@@ -28,8 +29,8 @@ const _t = (key, options) => t(`subscription.${key}`, options);
 const SubscriptionScreen = ({ navigation }) => {
   // --------------------------------------------------------- //
   // ----------------------- REDUX --------------------------- //
-  const subscriptions = useSelector(state => state.app.subscriptions);
-  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
+  const ownedSubscription = useSelector(getOwnedSubscription);
+  const subscriptions = useSelector(getSubscriptions);
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 
@@ -145,9 +146,9 @@ const SubscriptionScreen = ({ navigation }) => {
     () => (
       <View style={styles.emptyContainer}>
         <LottieView autoPlay loop={false} style={styles.lottie} source={require('../../../assets/no-subscriptions.json')} />
-        <Text style={styles.noSubscriptionsText}>No Subscriptions Found</Text>
+        <Text style={styles.noSubscriptionsText}>{_t('no_subscriptions_found')}</Text>
         <Text variant="bodySmall" style={styles.referText}>
-          Please refer to the documentation to know how to add subscriptions
+          {_t('refer_to_documentation')}
         </Text>
       </View>
     ),

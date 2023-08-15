@@ -7,7 +7,6 @@ export default theme =>
       backgroundColor: theme.colors.background,
     },
     scrollViewContent: {
-      flex: 1,
       padding: 16,
     },
     title: {

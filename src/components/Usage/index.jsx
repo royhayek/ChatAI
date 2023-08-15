@@ -22,8 +22,8 @@ import Pie from './Pie';
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
 import { setLastRewardedDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
+import { getConfiguration, getMessagesCount } from 'app/src/redux/selectors';
 import { REWARDED_AD_UNIT_ID } from 'app/src/config/constants';
-import { getConfiguration } from 'app/src/redux/selectors';
 import { appName } from 'app/src/helpers';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
@@ -43,7 +43,7 @@ const Usage = ({ open, onClose }) => {
   const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
   const updateLastRewardedDate = useCallback(payload => dispatch(setLastRewardedDate(payload)), [dispatch]);
 
-  const messagesCount = useSelector(state => state.app.messagesCount);
+  const messagesCount = useSelector(getMessagesCount);
   const config = useSelector(getConfiguration);
   const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   // ----------------------- /REDUX -------------------------- //
@@ -140,7 +140,7 @@ const Usage = ({ open, onClose }) => {
           />
         </View>
         <View style={styles.bottomSheetContent}>
-          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />s
+          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />
           <View style={styles.freeMessagesTextBg}>
             <Text variant="labelMedium" style={{ textAlign: 'center' }}>
               {availableMsgsCount > 0 ? _t('free_messages_daily', { name: appName, number: 5 }) : _t('hit_limit')}

@@ -23,13 +23,14 @@ import RootNavigation from './navigation';
 // ------------------------------------------------------------ //
 import { setMessagesCount, setLastSentDate, setConfig } from './redux/slices/appSlice';
 import SubscriptionManager from './services/SubscriptionManager';
+import { getLanguage, getThemeMode } from './redux/selectors';
 import { registerForPushNotificationsAsync } from './helpers';
 import { darkTheme, lightTheme } from './lib/theme';
 import NetworkInfo from './services/NetworkInfo';
 import { FIREBASE_DB } from 'app/firebaseConfig';
+import { Firebase } from './config/constants';
 import { createTables } from './data/localdb';
 import { changeLocale } from './config/i18n';
-import { Firebase } from './config/constants';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -49,8 +50,8 @@ const Root = () => {
   const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
   const updateConfiguration = useCallback(payload => dispatch(setConfig(payload)), [dispatch]);
 
-  const themeMode = useSelector(state => state.app.themeMode);
-  const language = useSelector(state => state.app.language);
+  const themeMode = useSelector(getThemeMode);
+  const language = useSelector(getLanguage);
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 

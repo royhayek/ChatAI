@@ -10,7 +10,7 @@ import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { getConfiguration } from 'app/src/redux/selectors';
+import { getConfiguration, getLanguage } from 'app/src/redux/selectors';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
 // ------------------------------------------------------------ //
@@ -22,7 +22,7 @@ const Intro = ({ setValue, handleSubmit, isAssistant, questions }) => {
   // --------------------------------------------------------- //
   // ----------------------- REDUX --------------------------- //
   const config = useSelector(getConfiguration);
-  const language = useSelector(state => state.app.language);
+  const language = useSelector(getLanguage);
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 
@@ -60,7 +60,7 @@ const Intro = ({ setValue, handleSubmit, isAssistant, questions }) => {
           </>
         )}
         <Text variant="titleMedium" style={styles.hint}>
-          {isAssistant ? 'Ask something like' : _t('examples')}
+          {isAssistant ? _t('ask_something_like') : _t('examples')}
         </Text>
       </View>
       <View>

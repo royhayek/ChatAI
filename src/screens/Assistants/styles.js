@@ -10,6 +10,7 @@ export default theme =>
     },
     contentContainer: {
       paddingBottom: 30,
+      paddingHorizontal: 16,
     },
     icon: {
       width: 70,
@@ -23,7 +24,6 @@ export default theme =>
     name: { marginBottom: 5 },
     flatList: {
       marginTop: 16,
-      paddingHorizontal: 16,
     },
     question: {
       marginBottom: 10,

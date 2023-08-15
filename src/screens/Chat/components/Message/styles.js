@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export default theme =>
+export default (theme, isRTL) =>
   StyleSheet.create({
     question: {
       padding: 15,
@@ -15,6 +15,7 @@ export default theme =>
     },
     questionText: { color: theme.colors.white },
     answer: {
+      direction: isRTL ? 'rtl' : 'ltr',
       marginVertical: 7,
       marginHorizontal: 14,
       paddingVertical: 8,
@@ -27,19 +28,22 @@ export default theme =>
     },
   });
 
-export const markdownStyles = theme => ({
+export const markdownStyles = (theme, isRTL) => ({
   text: {
     ...theme.fonts.labelLarge,
+    direction: isRTL ? 'rtl' : 'ltr',
     color: theme.dark ? theme.colors.white : theme.colors.black,
     lineHeight: 23,
   },
   blockquote: {
     ...theme.fonts.labelLarge,
+    direction: isRTL ? 'rtl' : 'ltr',
     color: theme.dark ? theme.colors.white : theme.colors.black,
   },
   em: {
     ...theme.fonts.bodySmall,
     color: theme.dark ? theme.colors.white : theme.colors.black,
+    direction: isRTL ? 'rtl' : 'ltr',
     fontWeight: '500',
     fontSize: 12.8,
     lineHeight: 19,
@@ -47,11 +51,13 @@ export const markdownStyles = theme => ({
   codespan: {
     ...theme.fonts.labelLarge,
     fontWeight: 'bold',
+    direction: isRTL ? 'rtl' : 'ltr',
     color: theme.dark ? theme.colors.white : theme.colors.black,
     backgroundColor: theme.dark ? theme.colors.secondaryContainer : 'transparent',
   },
   link: {
     ...theme.fonts.labelLarge,
+    direction: isRTL ? 'rtl' : 'ltr',
   },
   code: {
     ...theme.fonts.labelLarge,
@@ -59,6 +65,7 @@ export const markdownStyles = theme => ({
     padding: 16,
     borderRadius: 8,
     marginVertical: 5,
+    direction: isRTL ? 'rtl' : 'ltr',
     backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
   },
   table: {
@@ -66,11 +73,13 @@ export const markdownStyles = theme => ({
     borderWidth: 1,
     borderRadius: 2,
     borderColor: theme.colors.white,
+    direction: isRTL ? 'rtl' : 'ltr',
   },
   li: {
     ...theme.fonts.labelLarge,
     flex: 1,
     fontWeight: 'bold',
     color: theme.colors.secondary,
+    direction: isRTL ? 'rtl' : 'ltr',
   },
 });

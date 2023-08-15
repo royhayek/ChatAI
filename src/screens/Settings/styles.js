@@ -28,6 +28,7 @@ export default theme =>
       paddingVertical: 10,
       paddingHorizontal: 16,
       borderRadius: 8,
+      elevation: 1,
       backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
       shadowColor: theme.colors.shadow,
       shadowOpacity: theme.dark ? 0.6 : 0,
