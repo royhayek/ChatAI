@@ -13,6 +13,7 @@
     "chat": {
       "examples": "Examples",
       "send_a_message": "Send a message",
+      "ask_something_like": "Ask something like",
       "loading_messages": "Loading messages, please wait..."
     },
     "history": {
@@ -50,6 +51,8 @@
       "enjoy_without_ads": "Enjoy {{name}} without any ads",
       "unlock_access": "Unlock Unlimited Access",
       "cancel_anytime": "Cancel recurring billing anytime",
+      "no_subscriptions_found": "No Subscriptions Found",
+      "refer_to_documentation": "Please refer to the documentation to know how to add subscriptions",
       "P1W": "Weekly",
       "P1M": "Monthly",
       "P1Y": "Yearly",

@@ -1,7 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  config: {},
+  config: {
+    ads: {
+      rewarded: {
+        android: '',
+        ios: '',
+      },
+    },
+  },
   language: 'en',
   themeMode: 'dark',
   messagesCount: 0,

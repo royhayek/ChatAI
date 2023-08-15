@@ -12,9 +12,9 @@ import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { getConfiguration, getLanguage, getOwnedSubscription, getThemeMode } from 'app/src/redux/selectors';
 import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/slices/appSlice';
 import { changeLanguage, isRTL, t } from '../../config/i18n';
-import { getConfiguration } from 'app/src/redux/selectors';
 import { appName } from 'app/src/helpers';
 import makeStyles from './styles';
 // ------------------------------------------------------------ //
@@ -28,10 +28,10 @@ const SettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
+  const ownedSubscription = useSelector(getOwnedSubscription);
   const config = useSelector(getConfiguration);
-  const language = useSelector(state => state.app.language);
-  const themeMode = useSelector(state => state.app.themeMode);
-  const ownedSubscription = useSelector(state => state.app.ownedSubscription);
+  const themeMode = useSelector(getThemeMode);
+  const language = useSelector(getLanguage);
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 

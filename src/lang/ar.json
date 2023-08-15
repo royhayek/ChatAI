@@ -13,6 +13,7 @@
     "chat": {
       "examples": "أمثلة",
       "send_a_message": "ارسل رسالة",
+      "ask_something_like": "اسأل شيئًا مثل",
       "loading_messages": "جاري تحميل الرسائل ، يرجى الانتظار ..."
     },
     "history": {
@@ -50,6 +51,8 @@
       "enjoy_without_ads": "استمتع بـ {{name}} بدون أي إعلانات",
       "unlock_access": "إفتح وصول غير محدود",
       "cancel_anytime": "إلغاء الفواتير المتكررة في أي وقت",
+      "no_subscriptions_found": "لم يتم العثور على اشتراكات",
+      "refer_to_documentation": "يرجى الرجوع إلى الوثائق لمعرفة كيفية إضافة الاشتراكات",
       "P1W": "أسبوعيًا",
       "P1M": "شهريًا",
       "P1Y": "سنويًا",

@@ -9,7 +9,7 @@ import PT from 'prop-types';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { getConfiguration } from 'app/src/redux/selectors';
+import { getConfiguration, getMessagesCount } from 'app/src/redux/selectors';
 import { isRTL } from 'app/src/config/i18n';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
@@ -17,7 +17,7 @@ import { isRTL } from 'app/src/config/i18n';
 const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
   // --------------------------------------------------------- //
   // ----------------------- REDUX --------------------------- //
-  const messagesCount = useSelector(state => state.app.messagesCount);
+  const messagesCount = useSelector(getMessagesCount);
   const config = useSelector(getConfiguration);
   const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   // ----------------------- /REDUX -------------------------- //

@@ -15,6 +15,7 @@ export default theme =>
     content: {
       flex: 1,
       marginStart: 12,
+      marginEnd: 4,
     },
     title: {
       color: theme.dark ? theme.colors.white : theme.colors.black,

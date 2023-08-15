@@ -30,7 +30,19 @@ export const changeLanguage = lng => {
   });
 };
 
-export const changeLocale = locale => (i18n.locale = locale);
+export const changeLocale = locale => {
+  i18n.locale = locale;
+
+  wait(10).then(() => {
+    if (I18nManager.isRTL) {
+      I18nManager.forceRTL(true);
+      I18nManager.allowRTL(true);
+    } else {
+      I18nManager.forceRTL(false);
+      I18nManager.allowRTL(false);
+    }
+  });
+};
 
 export const isRTL = I18nManager.isRTL;
 

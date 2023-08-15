@@ -2,17 +2,25 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import React, { useCallback } from 'react';
-import { useTheme, Text, Divider } from 'react-native-paper';
 import { View, FlatList, TouchableOpacity } from 'react-native';
+import { useTheme, Text, Divider } from 'react-native-paper';
+import { useSelector } from 'react-redux';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { getLanguage } from 'app/src/redux/selectors';
 import { ASSISTANTS } from './data';
 import makeStyles from './styles';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
 const AssistantsScreen = ({ navigation }) => {
+  // --------------------------------------------------------- //
+  // ----------------------- REDUX --------------------------- //
+  const language = useSelector(getLanguage);
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
+
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
@@ -34,9 +42,9 @@ const AssistantsScreen = ({ navigation }) => {
         <View style={styles.icon}>{item?.icon}</View>
         <View style={styles.flex1}>
           <Text style={styles.name} variant="titleMedium">
-            {item.name}
+            {item.name[language]}
           </Text>
-          <Text variant="labelSmall">{item.description}</Text>
+          <Text variant="labelSmall">{item.description[language]}</Text>
         </View>
       </TouchableOpacity>
 
