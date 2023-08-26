@@ -36,6 +36,8 @@
       "rate_app": "قيم التطبيق",
       "upgrade_to_plus": "قم بالترقية إلى Plus!",
       "expanded_access": "توسيع الوصول إلى ميزات {{name}}",
+      "purchase_restored": "تمت استعادة الشراء بنجاح",
+      "could_not_restore": "تعذرت استعادة الشراء",
       "languages": {
         "english": "الإنجليزية",
         "arabic": "العربية",

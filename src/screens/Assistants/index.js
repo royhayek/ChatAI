@@ -4,10 +4,11 @@
 import React, { useCallback } from 'react';
 import { View, FlatList, TouchableOpacity } from 'react-native';
 import { useTheme, Text, Divider } from 'react-native-paper';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { setConversationId, setMessages } from 'app/src/redux/slices/chatSlice';
 import { getLanguage } from 'app/src/redux/selectors';
 import { ASSISTANTS } from './data';
 import makeStyles from './styles';
@@ -16,7 +17,11 @@ import makeStyles from './styles';
 // ------------------------------------------------------------ //
 const AssistantsScreen = ({ navigation }) => {
   // --------------------------------------------------------- //
-  // ----------------------- REDUX --------------------------- //
+  // ----------------------- REDUX --------------------------- /
+  const dispatch = useDispatch();
+  const updateMessages = useCallback(payload => dispatch(setMessages(payload)), [dispatch]);
+  const updateConversationId = useCallback(payload => dispatch(setConversationId(payload)), [dispatch]);
+
   const language = useSelector(getLanguage);
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
@@ -30,7 +35,14 @@ const AssistantsScreen = ({ navigation }) => {
 
   // --------------------------------------------------------- //
   // ----------------------- CALLBACKS ----------------------- //
-  const handleAssistantPress = useCallback(id => navigation.navigate('Chat', { id, fromAssistants: true }), [navigation]);
+  const handleAssistantPress = useCallback(
+    id => {
+      updateConversationId(null);
+      updateMessages([]);
+      navigation.navigate('Chat', { id, fromAssistants: true });
+    },
+    [navigation, updateConversationId, updateMessages],
+  );
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //
 

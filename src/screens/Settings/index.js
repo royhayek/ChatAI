@@ -2,7 +2,7 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import React, { useCallback, useMemo, useState } from 'react';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Menu, Switch, Text, useTheme } from 'react-native-paper';
 import { getAvailablePurchases } from 'react-native-iap';
 import Rate, { AndroidMarket } from 'react-native-rate';
@@ -75,9 +75,14 @@ const SettingsScreen = ({ navigation }) => {
   const handleRestorePurchase = useCallback(async () => {
     try {
       const purchases = await getAvailablePurchases();
-      console.debug('[handleRestorePurchase] :: ', { purchases });
-      const lastPurchase = _.last(purchases);
-      updateOwnedSubscription(lastPurchase?.productId);
+      if (!_.isEmpty(purchases)) {
+        console.debug('[handleRestorePurchase] :: ', { purchases });
+        const lastPurchase = _.last(purchases);
+        updateOwnedSubscription(lastPurchase?.productId);
+        Alert.alert(_t('purchase_restored'));
+      } else {
+        Alert.alert(_t('could_not_restore'));
+      }
     } catch (error) {
       console.error('[handleRestorePurchase] - ERROR :: ', error);
     }

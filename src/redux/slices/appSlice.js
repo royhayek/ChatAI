@@ -16,6 +16,7 @@ const initialState = {
   lastRewardedDate: null,
   subscriptions: [],
   ownedSubscription: null,
+  deviceUuid: null,
 };
 
 export const appSlice = createSlice({
@@ -46,6 +47,9 @@ export const appSlice = createSlice({
     setOwnedSubscription: (state, action) => {
       state.ownedSubscription = action.payload;
     },
+    setDeviceUuid: (state, action) => {
+      state.deviceUuid = action.payload;
+    },
   },
 });
 
@@ -53,8 +57,9 @@ export const {
   setConfig,
   setLanguage,
   setThemeMode,
-  setMessagesCount,
+  setDeviceUuid,
   setLastSentDate,
+  setMessagesCount,
   setLastRewardedDate,
   setPaidSubscriptions,
   setOwnedSubscription,

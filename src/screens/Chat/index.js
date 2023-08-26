@@ -2,17 +2,16 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, View } from 'react-native';
+import { I18nManager, Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, View } from 'react-native';
 import { Divider, IconButton, TextInput, useTheme } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { increment, ref, update } from 'firebase/database';
 import { useDispatch, useSelector } from 'react-redux';
-import * as SecureStore from 'expo-secure-store';
-import { Ionicons } from '@expo/vector-icons';
 import EventSource from 'react-native-sse';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
-import RegularButton from 'app/src/components/Buttons/Regular';
 import BackButton from 'app/src/components/Buttons/Back';
 import Conversation from './components/Conversation';
 import { Octicons } from '@expo/vector-icons';
@@ -21,11 +20,11 @@ import Intro from './components/Intro';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { getChatMessages, getConfiguration, getLanguage, getMessagesCount, getOwnedSubscription } from 'app/src/redux/selectors';
+import { getChatMessages, getConfiguration, getConversationId, getLanguage, getMessagesCount, getOwnedSubscription } from 'app/src/redux/selectors';
 import { addConversation, addMessage, getMessagesByConversation, updateLocalAnswer } from 'app/src/data/localdb';
-import { setLastSentDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
-import { setMessages, updateAnswer } from 'app/src/redux/slices/chatSlice';
+import { setConversationId, setMessages, updateAnswer } from 'app/src/redux/slices/chatSlice';
 import { Endpoints } from 'app/src/config/constants';
+import { FIREBASE_DB } from 'app/firebaseConfig';
 import { ASSISTANTS } from '../Assistants/data';
 import { isRTL, t } from '../../config/i18n';
 import { BASE_URL, API_KEY } from '@env';
@@ -39,12 +38,12 @@ const ChatScreen = ({ route, navigation }) => {
   // --------------------------------------------------------- //
   // ------------------------ REDUX -------------------------- //
   const dispatch = useDispatch();
-  const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
-  const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
   const updateMessages = useCallback(payload => dispatch(setMessages(payload)), [dispatch]);
   const updateMessageAnswer = useCallback(payload => dispatch(updateAnswer(payload)), [dispatch]);
+  const updateConversationId = useCallback(payload => dispatch(setConversationId(payload)), [dispatch]);
 
   const ownedSubscription = useSelector(getOwnedSubscription);
+  const conversationId = useSelector(getConversationId);
   const messagesCount = useSelector(getMessagesCount);
   const messages = useSelector(getChatMessages);
   const config = useSelector(getConfiguration);
@@ -62,12 +61,12 @@ const ChatScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [openUsageModal, setOpenUsageModal] = useState(false);
-  const [currentConversation, setCurrentConversation] = useState(route?.params?.conversation?.id ?? null);
 
   const routeParams = route.params;
   const isAssistantChat = _.has(routeParams, 'id') && route.params.fromAssistants;
   const assistant = _.find(ASSISTANTS, { id: routeParams?.id });
   const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
+  const isArabic = I18nManager.isRTL && Platform.OS === 'android';
   const language = useSelector(getLanguage);
 
   const apiMessages = useMemo(
@@ -87,19 +86,19 @@ const ChatScreen = ({ route, navigation }) => {
   // --------------------------------------------------------- //
   // ----------------------- CALLBACKS ----------------------- //
   const handleNewConversation = useCallback(() => {
-    setCurrentConversation(null);
+    updateConversationId(null);
     updateMessages([]);
     setValue(null);
-  }, [updateMessages]);
+  }, [updateConversationId, updateMessages]);
 
   const handleValueChange = useCallback(text => setValue(text), []);
 
   const refreshMessages = useCallback(() => {
-    !currentConversation && setLoadingMsgs(true);
-    getMessagesByConversation(currentConversation)
+    !conversationId && setLoadingMsgs(true);
+    getMessagesByConversation(conversationId)
       .then(m => !_.isEqual(m, messages) && updateMessages(m))
       .finally(() => setLoadingMsgs(false));
-  }, [currentConversation, messages, updateMessages]);
+  }, [conversationId, messages, updateMessages]);
 
   const createConversation = async message => {
     const newConversation = {
@@ -119,45 +118,51 @@ const ChatScreen = ({ route, navigation }) => {
 
   // Function to update the message count and last sent date in storage and redux
   const updateMessageCount = useCallback(async () => {
-    const today = new Date().toISOString().split('T')[0];
-
     try {
-      await SecureStore.setItemAsync('lastSentDate', today);
-      await SecureStore.setItemAsync('messageCount', (messagesCount + 1).toString());
-      updateMessagesCount(messagesCount + 1);
-      updateLastSentDate(today);
+      // Update message count and lastMessageDate in Firebase
+      let id = await AsyncStorage.getItem('deviceUUID');
+      const today = new Date().toISOString().split('T')[0];
+
+      const updates = {};
+      updates[`users/${id}/messagesCount`] = increment(1);
+      updates[`users/${id}/lastMessageDate`] = today;
+      update(ref(FIREBASE_DB), updates);
     } catch (error) {
       console.error('Error updating message count:', error);
     }
-  }, [messagesCount, updateLastSentDate, updateMessagesCount]);
+  }, []);
 
   const handleSubmitPrompt = useCallback(
     async message => {
       Keyboard.dismiss();
 
+      console.debug('[handleSubmitPrompt] ::', { messagesCount, dailyMessagesLimit, conversationId });
       if (messagesCount >= dailyMessagesLimit && !ownedSubscription) {
         setOpenUsageModal(true);
         return;
       }
 
       setLoading(true);
-      let conversationId = currentConversation ?? null;
+      let id = conversationId ?? null;
 
       // Create a new conversation if it doesn't exist
-      const existingMessages = currentConversation ? await getMessagesByConversation(currentConversation) : [];
+      const existingMessages = conversationId ? await getMessagesByConversation(conversationId) : [];
       if (existingMessages.length === 0) {
-        conversationId = await createConversation(message);
+        id = await createConversation(message);
       }
+      updateConversationId(id);
 
+      console.debug('created conversation id is: ', id);
+      console.debug('created conversation conversationId is: ', conversationId);
       const newMessageModel = {
         question: message,
         answer: '...',
-        conversationId,
+        conversationId: id,
         createdAt: new Date().toLocaleString(),
       };
 
       // Add the message to existing conversation
-      const currentMessages = currentConversation ? await getMessagesByConversation(currentConversation) : [];
+      const currentMessages = conversationId ? await getMessagesByConversation(conversationId) : [];
       currentMessages.push(newMessageModel);
       updateMessages(currentMessages);
 
@@ -199,8 +204,6 @@ const ChatScreen = ({ route, navigation }) => {
           setValue('');
         } else if (event.type === 'close') {
           console.info('Closed SSE connection');
-          // Update current conversation
-          setCurrentConversation(conversationId);
           // Update the last message in the state
           updateMessageAnswer(newContent);
           // Update answer in local storage before closing
@@ -217,12 +220,6 @@ const ChatScreen = ({ route, navigation }) => {
             if (finish_reason === 'stop') {
               // Update answer in local storage
               updateAnswerInDb(newContent, messageId);
-
-              // Update current conversation
-              setCurrentConversation(conversationId);
-
-              // Stop the loading placeholder
-              setLoading(false);
 
               // Update the message count and last sent date in storage
               updateMessageCount();
@@ -261,13 +258,13 @@ const ChatScreen = ({ route, navigation }) => {
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apiMessages, currentConversation, dailyMessagesLimit, messagesCount, ownedSubscription],
+    [apiMessages, conversationId, dailyMessagesLimit, ownedSubscription, messagesCount],
   );
 
-  const handleStopGeneration = useCallback(() => {
-    es.current && es.current.close();
-    setLoading(false);
-  }, []);
+  // const handleStopGeneration = useCallback(() => {
+  //   es.current && es.current.close();
+  //   setLoading(false);
+  // }, []);
 
   const renderUsagePie = useMemo(
     () => !ownedSubscription && <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
@@ -280,8 +277,8 @@ const ChatScreen = ({ route, navigation }) => {
   );
 
   const renderNewConvoButton = useMemo(
-    () => currentConversation && <IconButton size={22} onPress={handleNewConversation} icon={renderNewIcon} />,
-    [currentConversation, handleNewConversation, renderNewIcon],
+    () => conversationId && <IconButton size={22} onPress={handleNewConversation} icon={renderNewIcon} />,
+    [conversationId, handleNewConversation, renderNewIcon],
   );
 
   const renderHeaderLeft = useCallback(() => (isAssistantChat ? <BackButton /> : renderUsagePie), [isAssistantChat, renderUsagePie]);
@@ -305,20 +302,16 @@ const ChatScreen = ({ route, navigation }) => {
   // ------------------------ EFFECTS ------------------------ //
   useEffect(() => {
     navigation.setOptions({
-      headerLeft: renderHeaderLeft,
-      headerRight: renderHeaderRight,
+      headerLeft: isArabic ? renderHeaderRight : renderHeaderLeft,
+      headerRight: isArabic ? renderHeaderLeft : renderHeaderRight,
       headerTitle: isAssistantChat && assistant?.name[language],
     });
-  }, [assistant?.name, isAssistantChat, language, navigation, renderHeaderLeft, renderHeaderRight]);
+  }, [assistant?.name, isArabic, isAssistantChat, language, navigation, renderHeaderLeft, renderHeaderRight]);
 
   useEffect(() => {
-    route?.params?.conversation && setCurrentConversation(route.params.conversation.id);
-  }, [route]);
-
-  useEffect(() => {
-    currentConversation && refreshMessages();
+    conversationId && refreshMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentConversation]);
+  }, [conversationId]);
   // ----------------------- /EFFECTS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -337,7 +330,7 @@ const ChatScreen = ({ route, navigation }) => {
     [assistant?.questions, handleSubmitPrompt, isAssistantChat, language, value],
   );
 
-  const renderConversation = useMemo(() => <Conversation data={messages} loading={loadingMsgs} />, [loadingMsgs, messages]);
+  const renderConversation = useMemo(() => <Conversation data={messages} loading={loadingMsgs} shouldScroll={loading} />, [loadingMsgs, messages]);
 
   const renderMessageInputField = useMemo(
     () => (
@@ -374,20 +367,20 @@ const ChatScreen = ({ route, navigation }) => {
     [handleSubmitPrompt, handleValueChange, styles.input, styles.underline, theme.colors.secondary, value],
   );
 
-  const renderLoading = useMemo(
-    () => (
-      <View style={styles.stopButton}>
-        <RegularButton title="Stop" startIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />} onPress={handleStopGeneration} />
-      </View>
-    ),
-    [handleStopGeneration, styles.stopButton, theme.colors.white],
-  );
+  // const renderStopButn = useMemo(
+  //   () => (
+  //     <View style={styles.stopButton}>
+  //       <RegularButton title="Stop" startIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />} onPress={handleStopGeneration} />
+  //     </View>
+  //   ),
+  //   [handleStopGeneration, styles.stopButton, theme.colors.white],
+  // );
 
   return (
     <View style={styles.container} onPress={() => Keyboard.dismiss()}>
       <View style={styles.flex1}>
         {_.isEmpty(messages) ? renderIntro : renderConversation}
-        {loading ? renderLoading : null}
+        {/* {loading ? renderStopButn : null} */}
       </View>
 
       <Divider style={styles.divider} />

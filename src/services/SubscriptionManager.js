@@ -71,7 +71,7 @@ const SubscriptionManager = () => {
         }
 
         fetchAvailablePurchases();
-        console.debug('config?.productIds?.android', config?.productIds?.android);
+
         // Load available products (subscription plans) from the app stores
         const productIds = Platform.select({
           android: config?.productIds?.android,

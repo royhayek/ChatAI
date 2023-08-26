@@ -53,7 +53,7 @@ const SubscriptionScreen = ({ navigation }) => {
     const productId = firstSubscription?.productId;
     const offerToken = selectedPlan?.offerToken;
     if (isPlay && !offerToken) {
-      console.warn(`There are no subscription Offers for selected product (Only requiered for Google Play purchases): ${productId}`);
+      console.warn(`There are no subscription Offers for selected product (Only required for Google Play purchases): ${productId}`);
     }
     try {
       await requestSubscription({

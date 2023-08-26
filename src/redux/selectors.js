@@ -6,6 +6,7 @@ export const appState = state => state.app;
 export const getLanguage = createSelector(appState, data => data.language);
 export const getThemeMode = createSelector(appState, data => data.themeMode);
 export const getConfiguration = createSelector(appState, data => data.config);
+export const getDeviceUuid = createSelector(appState, data => data.deviceUuid);
 export const getMessagesCount = createSelector(appState, data => data.messagesCount);
 export const getSubscriptions = createSelector(appState, data => data.subscriptions);
 export const getOwnedSubscription = createSelector(appState, data => data.ownedSubscription);
@@ -14,3 +15,4 @@ export const getOwnedSubscription = createSelector(appState, data => data.ownedS
 export const chatState = state => state.chat;
 
 export const getChatMessages = createSelector(chatState, data => data.messages);
+export const getConversationId = createSelector(chatState, data => data.conversationId);

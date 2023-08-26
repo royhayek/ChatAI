@@ -6,15 +6,24 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { IconButton, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
+import { setConversationId } from 'app/src/redux/slices/chatSlice';
 import { deleteConversation } from 'app/src/data/localdb';
 import makeStyles from './styles';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENT ------------------------- //
 // ------------------------------------------------------------ //
 const HistoryCard = ({ item, index, refresh }) => {
+  // --------------------------------------------------------- //
+  // ------------------------ REDUX -------------------------- //
+  const dispatch = useDispatch();
+  const updateConversationId = useCallback(payload => dispatch(setConversationId(payload)), [dispatch]);
+  // ----------------------- /REDUX -------------------------- //
+  // --------------------------------------------------------- //
+
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
@@ -27,9 +36,10 @@ const HistoryCard = ({ item, index, refresh }) => {
   // ---------------------- CALLBACKS ------------------------ //
   const handleTextPress = useCallback(
     conversation => {
-      navigation.navigate('ChatStack', { screen: 'Chat', params: { conversation } });
+      updateConversationId(conversation.id);
+      navigation.navigate('ChatStack', { screen: 'Chat' });
     },
-    [navigation],
+    [navigation, updateConversationId],
   );
 
   const handleDeleteHistory = useCallback(
