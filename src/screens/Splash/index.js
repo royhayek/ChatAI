@@ -34,7 +34,6 @@ const SplashScreen = () => {
   if (showSplash) {
     return (
       <View style={styles.container}>
-        <StatusBar style="dark" />
         <LottieView
           autoPlay
           loop={false}

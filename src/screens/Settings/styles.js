@@ -8,7 +8,7 @@ export default theme =>
       backgroundColor: theme.colors.background,
     },
     content: {
-      marginHorizontal: 16,
+      marginHorizontal: 14,
     },
     contentContainer: { paddingBottom: 30 },
     iconAndTitle: {
@@ -25,15 +25,16 @@ export default theme =>
       justifyContent: 'space-between',
     },
     card: {
+      elevation: 1,
+      borderRadius: 8,
+      marginHorizontal: 4,
       paddingVertical: 10,
       paddingHorizontal: 16,
-      borderRadius: 8,
-      elevation: 1,
-      backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
-      shadowColor: theme.colors.shadow,
-      shadowOpacity: theme.dark ? 0.6 : 0,
       shadowRadius: 3,
+      shadowColor: theme.colors.shadow,
+      shadowOpacity: theme.dark ? 0.4 : 0,
       shadowOffset: { width: 0, height: 0 },
+      backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
     },
     title: {
       marginVertical: 16,

@@ -1,7 +1,7 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTheme } from 'react-native-paper';
 import Markdown from 'react-native-marked';
 import { View, Text, I18nManager } from 'react-native';
@@ -13,7 +13,7 @@ import { hasArabicCharacters } from 'app/src/helpers';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENT ------------------------- //
 // ------------------------------------------------------------ //
-const Message = ({ question, answer }) => {
+const Message = ({ flatListRef, question, answer }) => {
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const isRTL = hasArabicCharacters(answer) && I18nManager.isRTL;
@@ -23,6 +23,9 @@ const Message = ({ question, answer }) => {
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
+  // const handleContentSizeChange = useCallback(() => {
+  //   flatListRef.current.scrollToEnd({ animated: true });
+  // }, [flatListRef]);
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
   const renderQuestionText = useMemo(
@@ -36,20 +39,20 @@ const Message = ({ question, answer }) => {
 
   const renderQuestion = useMemo(() => <View style={styles.question}>{renderQuestionText}</View>, [renderQuestionText, styles.question]);
 
-  const renderAnswer = useMemo(() => {
-    console.debug('I18nManager.isRTL', I18nManager.isRTL);
-    console.debug('isRTL', isRTL);
-    return (
+  const renderAnswer = useMemo(
+    () => (
       <Markdown
         value={answer}
         styles={markdownStyles(theme, isRTL)}
         flatListProps={{
+          // onContentSizeChange: handleContentSizeChange,
           initialNumToRender: 8,
           style: styles.answer,
         }}
       />
-    );
-  }, [isRTL, answer, theme, styles.answer]);
+    ),
+    [answer, theme, isRTL, styles.answer],
+  );
 
   return (
     <View key={question}>

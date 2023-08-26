@@ -36,6 +36,8 @@
       "rate_app": "Rate App",
       "upgrade_to_plus": "Upgrade to Plus!",
       "expanded_access": "Extended access to {{name}} features",
+      "purchase_restored": "Purchase restored successfully",
+      "could_not_restore": "Could not restore purchase",
       "languages": {
         "english": "English",
         "arabic": "Arabic",

@@ -6,8 +6,7 @@ import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads'
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import * as SecureStore from 'expo-secure-store';
+import { useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import PT from 'prop-types';
@@ -21,12 +20,13 @@ import Pie from './Pie';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { setLastRewardedDate, setMessagesCount } from 'app/src/redux/slices/appSlice';
-import { getConfiguration, getMessagesCount } from 'app/src/redux/selectors';
+import { getConfiguration, getDeviceUuid, getMessagesCount } from 'app/src/redux/selectors';
 import { REWARDED_AD_UNIT_ID } from 'app/src/config/constants';
 import { appName } from 'app/src/helpers';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
+import { increment, ref, update } from 'firebase/database';
+import { FIREBASE_DB } from 'app/firebaseConfig';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -39,11 +39,8 @@ const rewarded = RewardedAd.createForAdRequest(REWARDED_AD_UNIT_ID, {
 const Usage = ({ open, onClose }) => {
   // --------------------------------------------------------- //
   // ----------------------- REDUX --------------------------- //
-  const dispatch = useDispatch();
-  const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
-  const updateLastRewardedDate = useCallback(payload => dispatch(setLastRewardedDate(payload)), [dispatch]);
-
   const messagesCount = useSelector(getMessagesCount);
+  const deviceUuid = useSelector(getDeviceUuid);
   const config = useSelector(getConfiguration);
   const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   // ----------------------- /REDUX -------------------------- //
@@ -58,10 +55,10 @@ const Usage = ({ open, onClose }) => {
 
   const [loadedAd, setLoadedAd] = useState(false);
 
-  const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [messagesCount]);
+  const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [dailyMessagesLimit, messagesCount]);
   const snapPoints = useMemo(() => {
-    return [availableMsgsCount > 0 ? (Platform.OS === 'android' ? '65%' : '55%') : Platform.OS === 'android' ? '18%' : '58%'];
-  }, []);
+    return [availableMsgsCount > 0 ? (Platform.OS === 'android' ? '65%' : '55%') : Platform.OS === 'android' ? '68%' : '58%'];
+  }, [availableMsgsCount]);
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -72,15 +69,15 @@ const Usage = ({ open, onClose }) => {
   const handleSheetClose = useCallback(() => {
     _.isFunction(onClose) && onClose();
     bottomSheetRef.current.close();
-  }, []);
+  }, [onClose]);
 
   const handleGetUnlimitedPress = useCallback(() => {
     handleSheetClose();
     navigation.navigate('Subscription');
-  }, []);
+  }, [handleSheetClose, navigation]);
 
   const handleEarnClick = useCallback(() => {
-    rewarded.show();
+    rewarded.loaded && rewarded.show();
   }, []);
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //
@@ -95,15 +92,16 @@ const Usage = ({ open, onClose }) => {
     const today = new Date().toISOString().split('T')[0];
 
     const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, async () => {
-      const lastSentDate = await SecureStore.getItemAsync('lastRewardedDate');
-      !_.isEqual(lastSentDate, today) && setLoadedAd(true);
+      setLoadedAd(true);
     });
 
     const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async () => {
-      await SecureStore.setItemAsync('messageCount', (availableMsgsCount + 1).toString());
-      await SecureStore.setItemAsync('lastRewardedDate', today);
-      updateMessagesCount(availableMsgsCount + 1);
-      updateLastRewardedDate(today);
+      const updates = {};
+      updates[`users/${deviceUuid}/messagesCount`] = increment(-1);
+      updates[`users/${deviceUuid}/lastRewardedDate`] = today;
+      update(ref(FIREBASE_DB), updates);
+      setLoadedAd(false);
+      rewarded.load();
     });
 
     // Start loading the rewarded ad straight away
@@ -114,7 +112,20 @@ const Usage = ({ open, onClose }) => {
       unsubscribeLoaded();
       unsubscribeEarned();
     };
-  }, []);
+  }, [deviceUuid]);
+
+  useEffect(() => {
+    if (!loadedAd) {
+      const interval = setInterval(() => {
+        console.debug('Trying loading a new Ad');
+        rewarded.load();
+      }, 5000);
+
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [loadedAd]);
   // ----------------------- /EFFECTS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -149,7 +160,7 @@ const Usage = ({ open, onClose }) => {
           <RegularButton title={_t('get_unlimited')} style={styles.upgradeButton} onPress={handleGetUnlimitedPress} />
           <RegularButton
             title={_t('earn')}
-            disabled={_.isEqual(availableMsgsCount, dailyMessagesLimit) || !rewarded.loaded || !loadedAd}
+            disabled={_.isEqual(availableMsgsCount, dailyMessagesLimit) || !loadedAd}
             style={styles.earnButton}
             onPress={handleEarnClick}
             backgroundColors={['#FF3F3F', '#FF2020', '#FF0000']}

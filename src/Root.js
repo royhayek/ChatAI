@@ -12,6 +12,7 @@ import { withIAPContext } from 'react-native-iap';
 import { ref, onValue } from 'firebase/database';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
+import uuid from 'react-native-uuid';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
@@ -21,7 +22,7 @@ import RootNavigation from './navigation';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { setMessagesCount, setLastSentDate, setConfig } from './redux/slices/appSlice';
+import { setMessagesCount, setLastSentDate, setConfig, setDeviceUuid } from './redux/slices/appSlice';
 import SubscriptionManager from './services/SubscriptionManager';
 import { getLanguage, getThemeMode } from './redux/selectors';
 import { registerForPushNotificationsAsync } from './helpers';
@@ -31,6 +32,7 @@ import { FIREBASE_DB } from 'app/firebaseConfig';
 import { Firebase } from './config/constants';
 import { createTables } from './data/localdb';
 import { changeLocale } from './config/i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -47,7 +49,7 @@ const Root = () => {
   // ------------------------ REDUX -------------------------- //
   const dispatch = useDispatch();
   const updateMessagesCount = useCallback(payload => dispatch(setMessagesCount(payload)), [dispatch]);
-  const updateLastSentDate = useCallback(payload => dispatch(setLastSentDate(payload)), [dispatch]);
+  const updateDeviceUuid = useCallback(payload => dispatch(setDeviceUuid(payload)), [dispatch]);
   const updateConfiguration = useCallback(payload => dispatch(setConfig(payload)), [dispatch]);
 
   const themeMode = useSelector(getThemeMode);
@@ -70,6 +72,26 @@ const Root = () => {
 
   // --------------------------------------------------------- //
   // ----------------------- CALLBACKS ----------------------- //
+  // Function to generate and store UUID if not already stored
+  const getOrGenerateUUID = async () => {
+    try {
+      let id = await AsyncStorage.getItem('deviceUUID');
+      console.debug('[getOrGenerateUUID] :: ', { id });
+      if (!id) {
+        // Generate a new UUID
+        id = uuid.v4();
+        // Store the generated UUID
+        await AsyncStorage.setItem('deviceUUID', id);
+      }
+
+      updateDeviceUuid(id);
+      return id;
+    } catch (error) {
+      console.error('Error retrieving/generating UUID:', error);
+      return null;
+    }
+  };
+
   const getConfiguration = useCallback(async () => {
     try {
       const configRef = ref(FIREBASE_DB, Firebase.CONFIGURATION_REF);
@@ -83,23 +105,24 @@ const Root = () => {
   }, [updateConfiguration]);
 
   // Function to initialize the message count from storage
-  const initializeMessageCount = useCallback(async () => {
+  const checkDailyMessageCount = async () => {
+    const id = await getOrGenerateUUID();
+    const today = new Date().toISOString().split('T')[0];
     try {
-      const lastSentDate = await SecureStore.getItemAsync('lastSentDate');
-      const today = new Date().toISOString().split('T')[0];
+      const messagesRef = ref(FIREBASE_DB, `users/${id}`);
+      onValue(messagesRef, snapshot => {
+        const userData = snapshot.val();
+        if (userData && userData.lastMessageDate === today) {
+          updateMessagesCount(userData.messagesCount || 0);
+        }
+      });
 
-      if (lastSentDate === today) {
-        const messageCount = await SecureStore.getItemAsync('messageCount');
-        updateMessagesCount(parseInt(messageCount));
-        updateLastSentDate(lastSentDate);
-      } else {
-        await SecureStore.deleteItemAsync('lastSentDate');
-        await SecureStore.deleteItemAsync('messageCount');
-      }
+      updateMessagesCount(0); // Start with 0 if it's a new day
     } catch (error) {
-      console.error('[initializeMessageCount] - ERROR :: ', error);
+      console.error('Error checking daily message count:', error);
+      return 0;
     }
-  }, [updateLastSentDate, updateMessagesCount]);
+  };
 
   const initAppPurchases = useCallback(async () => {
     try {
@@ -127,7 +150,7 @@ const Root = () => {
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     getConfiguration();
-    initializeMessageCount();
+    checkDailyMessageCount();
     changeLocale(language);
     createTables();
     initAppPurchases();

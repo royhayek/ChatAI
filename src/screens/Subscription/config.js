@@ -30,21 +30,51 @@ export const benefits = theme => [
 
 export const dummyPlans = [
   {
-    id: 1,
-    title: 'Weekly',
-    price: 8.0,
-    unit: 'Week',
+    subscriptionOfferDetails: [
+      {
+        pricingPhases: {
+          pricingPhaseList: [
+            {
+              id: 1,
+              billingPeriod: 'P1W',
+              formattedPrice: '$19.99',
+              unit: 'Week',
+            },
+          ],
+        },
+      },
+    ],
   },
   {
-    id: 2,
-    title: 'Monthly',
-    price: 25.0,
-    unit: 'Month',
+    subscriptionOfferDetails: [
+      {
+        pricingPhases: {
+          pricingPhaseList: [
+            {
+              id: 2,
+              billingPeriod: 'P1M',
+              formattedPrice: '$59.99',
+              unit: 'Month',
+            },
+          ],
+        },
+      },
+    ],
   },
   {
-    id: 3,
-    title: 'Yearly',
-    price: 79.0,
-    unit: 'Year',
+    subscriptionOfferDetails: [
+      {
+        pricingPhases: {
+          pricingPhaseList: [
+            {
+              id: 3,
+              billingPeriod: 'P1Y',
+              formattedPrice: '$199.99',
+              unit: 'Year',
+            },
+          ],
+        },
+      },
+    ],
   },
 ];

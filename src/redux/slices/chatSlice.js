@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import _ from 'lodash';
 
 const initialState = {
+  conversationId: null,
   messages: [],
 };
 
@@ -9,6 +10,9 @@ export const chatSlice = createSlice({
   name: 'chat',
   initialState: initialState,
   reducers: {
+    setConversationId: (state, action) => {
+      state.conversationId = action.payload;
+    },
     setMessages: (state, action) => {
       state.messages = action.payload;
     },
@@ -20,6 +24,6 @@ export const chatSlice = createSlice({
   },
 });
 
-export const { setMessages, updateAnswer } = chatSlice.actions;
+export const { setMessages, updateAnswer, setConversationId, generateTestMessages } = chatSlice.actions;
 
 export default chatSlice.reducer;

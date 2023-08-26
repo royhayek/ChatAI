@@ -36,6 +36,8 @@
       "rate_app": "Évaluer l'application",
       "upgrade_to_plus": "Passez à Plus!",
       "expanded_access": "Accès étendu aux fonctionnalités de {{name}}",
+      "purchase_restored": "Achat restauré avec succès",
+      "could_not_restore": "Impossible de restaurer l'achat",
       "languages": {
         "english": "Anglais",
         "arabic": "Arabe",

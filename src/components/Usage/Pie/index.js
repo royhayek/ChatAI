@@ -28,7 +28,7 @@ const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
   const theme = useTheme();
 
   const suffix = ` / ${dailyMessagesLimit}`;
-  const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [messagesCount]);
+  const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [dailyMessagesLimit, messagesCount]);
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
