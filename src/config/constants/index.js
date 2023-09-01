@@ -3,9 +3,7 @@ import { Platform } from 'react-native';
 import { TestIds } from 'react-native-google-mobile-ads';
 const state = store.getState();
 
-// Place your rewarded ad unit ids here
-console.debug('state.app.config?.ads?.rewarded.ios', state.app.config?.ads?.rewarded.ios);
-console.debug('state.app.config?.ads?.rewarded.android', state.app.config?.ads?.rewarded.android);
+// Place your rewarded ad unit ids heres
 export const REWARDED_AD_UNIT_ID = Platform.select({
   ios: __DEV__ ? TestIds.REWARDED : state.app.config?.ads?.rewarded.ios || '',
   android: __DEV__ ? TestIds.REWARDED : state.app.config?.ads?.rewarded.android || '',
