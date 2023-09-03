@@ -8,9 +8,10 @@ export default theme =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    listContent: {
-      paddingTop: 10,
-    },
+    listContent: loading => ({
+      paddingTop: loading ? 50 : 10,
+      paddingBottom: 10,
+    }),
     loadingText: { marginTop: 20 },
     fab: {
       right: 24,

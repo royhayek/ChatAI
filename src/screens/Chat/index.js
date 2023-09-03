@@ -14,6 +14,7 @@ import _ from 'lodash';
 // ------------------------------------------------------------ //
 import BackButton from 'app/src/components/Buttons/Back';
 import Conversation from './components/Conversation';
+import { Ionicons } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
 import Usage from 'app/src/components/Usage';
 import Intro from './components/Intro';
@@ -29,6 +30,7 @@ import { ASSISTANTS } from '../Assistants/data';
 import { isRTL, t } from '../../config/i18n';
 import { BASE_URL, API_KEY } from '@env';
 import makeStyles from './styles';
+import RegularButton from 'app/src/components/Buttons/Regular';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -136,7 +138,6 @@ const ChatScreen = ({ route, navigation }) => {
     async message => {
       Keyboard.dismiss();
 
-      console.debug('[handleSubmitPrompt] ::', { messagesCount, dailyMessagesLimit, conversationId });
       if (messagesCount >= dailyMessagesLimit && !ownedSubscription) {
         setOpenUsageModal(true);
         return;
@@ -152,8 +153,6 @@ const ChatScreen = ({ route, navigation }) => {
       }
       updateConversationId(id);
 
-      console.debug('created conversation id is: ', id);
-      console.debug('created conversation conversationId is: ', conversationId);
       const newMessageModel = {
         question: message,
         answer: '...',
@@ -204,6 +203,7 @@ const ChatScreen = ({ route, navigation }) => {
           setValue('');
         } else if (event.type === 'close') {
           console.info('Closed SSE connection');
+          setLoading(false);
           // Update the last message in the state
           updateMessageAnswer(newContent);
           // Update answer in local storage before closing
@@ -261,10 +261,10 @@ const ChatScreen = ({ route, navigation }) => {
     [apiMessages, conversationId, dailyMessagesLimit, ownedSubscription, messagesCount],
   );
 
-  // const handleStopGeneration = useCallback(() => {
-  //   es.current && es.current.close();
-  //   setLoading(false);
-  // }, []);
+  const handleStopGeneration = useCallback(() => {
+    es.current && es.current.close();
+    setLoading(false);
+  }, []);
 
   const renderUsagePie = useMemo(
     () => !ownedSubscription && <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
@@ -330,7 +330,10 @@ const ChatScreen = ({ route, navigation }) => {
     [assistant?.questions, handleSubmitPrompt, isAssistantChat, language, value],
   );
 
-  const renderConversation = useMemo(() => <Conversation data={messages} loading={loadingMsgs} shouldScroll={loading} />, [loadingMsgs, messages]);
+  const renderConversation = useMemo(
+    () => <Conversation data={messages} loading={loadingMsgs} generating={loading} />,
+    [loading, loadingMsgs, messages],
+  );
 
   const renderMessageInputField = useMemo(
     () => (
@@ -367,20 +370,24 @@ const ChatScreen = ({ route, navigation }) => {
     [handleSubmitPrompt, handleValueChange, styles.input, styles.underline, theme.colors.secondary, value],
   );
 
-  // const renderStopButn = useMemo(
-  //   () => (
-  //     <View style={styles.stopButton}>
-  //       <RegularButton title="Stop" startIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />} onPress={handleStopGeneration} />
-  //     </View>
-  //   ),
-  //   [handleStopGeneration, styles.stopButton, theme.colors.white],
-  // );
+  const renderStopButn = useMemo(
+    () => (
+      <View style={styles.stopButton}>
+        <RegularButton
+          title="Stop Generating"
+          startIcon={<Ionicons name="md-stop" size={18} color={theme.colors.white} />}
+          onPress={handleStopGeneration}
+        />
+      </View>
+    ),
+    [handleStopGeneration, styles.stopButton, theme.colors.white],
+  );
 
   return (
     <View style={styles.container} onPress={() => Keyboard.dismiss()}>
       <View style={styles.flex1}>
         {_.isEmpty(messages) ? renderIntro : renderConversation}
-        {/* {loading ? renderStopButn : null} */}
+        {loading ? renderStopButn : null}
       </View>
 
       <Divider style={styles.divider} />
