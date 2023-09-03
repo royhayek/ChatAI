@@ -23,9 +23,11 @@ const Message = ({ flatListRef, question, answer }) => {
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
-  // const handleContentSizeChange = useCallback(() => {
-  //   flatListRef.current.scrollToEnd({ animated: true });
-  // }, [flatListRef]);
+  // useEffect(() => {
+  //   console.debug('answer', answer)
+  //   flatListRef.current && flatListRef.current.scrollToEnd({ animated: true });
+  // }, [flatListRef, answer]);
+
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
   const renderQuestionText = useMemo(
@@ -45,7 +47,6 @@ const Message = ({ flatListRef, question, answer }) => {
         value={answer}
         styles={markdownStyles(theme, isRTL)}
         flatListProps={{
-          // onContentSizeChange: handleContentSizeChange,
           initialNumToRender: 8,
           style: styles.answer,
         }}

@@ -17,9 +17,11 @@ export const chatSlice = createSlice({
       state.messages = action.payload;
     },
     updateAnswer: (state, action) => {
-      const last = _.clone(state.messages);
-      last[state.messages.length - 1].answer = action.payload;
-      state.messages = last;
+      const last = _.last(state.messages);
+      last.answer = action.payload;
+      // const last = _.clone(state.messages);
+      // last[state.messages.length - 1].answer = action.payload;
+      // state.messages = state.messages;
     },
   },
 });
