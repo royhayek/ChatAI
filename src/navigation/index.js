@@ -19,7 +19,8 @@ import InfoScreen from '../screens/Info';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { t } from '../config/i18n';
+import { isRTL, t } from '../config/i18n';
+import { I18nManager, Platform } from 'react-native';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -36,6 +37,8 @@ const RootNavigation = () => {
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
+
+  const isArabic = I18nManager.isRTL && Platform.OS === 'android';
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -48,7 +51,8 @@ const RootNavigation = () => {
     headerTitleStyle: { color: theme.dark ? theme.colors.white : theme.colors.black },
     headerStyle: { backgroundColor: theme.colors.background },
     headerShadowVisible: false,
-    headerLeft: renderHeaderLeft,
+    headerLeft: isArabic ? null : renderHeaderLeft,
+    headerRight: isArabic ? renderHeaderLeft : null,
   };
 
   const ChatStackScreen = () => (

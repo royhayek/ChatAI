@@ -98,7 +98,7 @@ const ChatScreen = ({ route, navigation }) => {
   const refreshMessages = useCallback(() => {
     !conversationId && setLoadingMsgs(true);
     getMessagesByConversation(conversationId)
-      .then(m => !_.isEqual(m, messages) && updateMessages(m))
+      .then(m => !_.isEqual(m, messages) && updateMessages(_.reverse(m)))
       .finally(() => setLoadingMsgs(false));
   }, [conversationId, messages, updateMessages]);
 
@@ -163,7 +163,7 @@ const ChatScreen = ({ route, navigation }) => {
       // Add the message to existing conversation
       const currentMessages = conversationId ? await getMessagesByConversation(conversationId) : [];
       currentMessages.push(newMessageModel);
-      updateMessages(currentMessages);
+      updateMessages(_.reverse(currentMessages));
 
       // Save inital message in local storage
       const messageId = await createMessage(newMessageModel);

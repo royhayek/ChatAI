@@ -106,9 +106,9 @@ const SubscriptionManager = () => {
       }
     });
 
-    const purchaseError = purchaseErrorListener(error => Alert.alert('purchase error', JSON.stringify(error)));
+    const purchaseError = purchaseErrorListener(error => console.info('[Product promoted] :: ', { error: JSON.stringify(error) }));
 
-    const promotedProduct = promotedProductListener(productId => Alert.alert('Product promoted', productId));
+    const promotedProduct = promotedProductListener(productId => console.info('[Product promoted] :: ', { productId }));
 
     return () => {
       purchaseUpdate?.remove();

@@ -78,6 +78,7 @@ const Root = () => {
       let id = await AsyncStorage.getItem('deviceUUID');
       console.debug('[getOrGenerateUUID] :: ', { id });
       if (!id) {
+        console.debug('[getOrGenerateUUID Generating a new ID');
         // Generate a new UUID
         id = uuid.v4();
         // Store the generated UUID
