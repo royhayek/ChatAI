@@ -117,9 +117,9 @@ const Usage = ({ open, onClose }) => {
   useEffect(() => {
     if (!loadedAd) {
       const interval = setInterval(() => {
-        console.debug('Trying loading a new Ad');
+        console.debug('Trying to load a new Ad');
         rewarded.load();
-      }, 5000);
+      }, 10000);
 
       return () => {
         clearInterval(interval);

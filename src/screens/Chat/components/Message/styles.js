@@ -13,7 +13,11 @@ export default (theme, isRTL) =>
       borderBottomStartRadius: 18,
       backgroundColor: '#2C2C2C',
     },
-    questionText: { color: theme.colors.white },
+    questionText: {
+      ...theme.fonts.labelLarge,
+      color: theme.colors.white,
+      lineHeight: 23,
+    },
     answer: {
       direction: isRTL ? 'rtl' : 'ltr',
       marginVertical: 7,

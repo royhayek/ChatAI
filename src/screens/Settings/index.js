@@ -15,6 +15,7 @@ import _ from 'lodash';
 import { getConfiguration, getLanguage, getOwnedSubscription, getThemeMode } from 'app/src/redux/selectors';
 import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/slices/appSlice';
 import { changeLanguage, isRTL, t } from '../../config/i18n';
+import { Languages } from 'app/src/config/constants';
 import { appName } from 'app/src/helpers';
 import makeStyles from './styles';
 // ------------------------------------------------------------ //
@@ -114,24 +115,6 @@ const SettingsScreen = ({ navigation }) => {
 
   // --------------------------------------------------------- //
   // ---------------------- RENDER VARS ---------------------- //
-  const languages = useMemo(
-    () => [
-      {
-        locale: 'en',
-        title: _t('languages.english'),
-      },
-      {
-        locale: 'fr',
-        title: _t('languages.french'),
-      },
-      {
-        locale: 'ar',
-        title: _t('languages.arabic'),
-      },
-    ],
-    [],
-  );
-
   const sections = useMemo(
     () => [
       {
@@ -141,7 +124,7 @@ const SettingsScreen = ({ navigation }) => {
             key: 'language',
             name: _t('language'),
             icon: 'ios-language-outline',
-            value: _.find(languages, { locale: language })?.title,
+            value: _.find(Languages, { locale: language })?.title,
             onPress: () => toggleLangMenu(),
             isMenu: true,
           },

@@ -8,9 +8,13 @@ import { I18n } from 'i18n-js';
 import { wait } from '../../helpers';
 
 const i18n = new I18n();
+
+// Uncomment the following line and replace "language" with the language
+// i18n.store(language);
 i18n.store(en);
 i18n.store(fr);
 i18n.store(ar);
+
 i18n.enableFallback = true;
 
 export const changeLanguage = lng => {
@@ -18,7 +22,6 @@ export const changeLanguage = lng => {
 
   wait(10).then(() => {
     const isRTL = _.isEqual(lng, 'ar');
-    console.debug('isRTL', isRTL);
     I18nManager.forceRTL(isRTL);
     I18nManager.allowRTL(isRTL);
 

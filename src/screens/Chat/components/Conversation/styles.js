@@ -10,7 +10,6 @@ export default theme =>
     },
     listContent: loading => ({
       paddingTop: loading ? 50 : 10,
-      paddingBottom: 10,
     }),
     loadingText: { marginTop: 20 },
     fab: {
