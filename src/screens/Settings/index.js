@@ -185,7 +185,7 @@ const SettingsScreen = ({ navigation }) => {
         ],
       },
     ],
-    [handleRateApp, handleRestorePurchase, isDark, language, languages, navigateToInfo, navigateToSubscription, toggleLangMenu, toggleThemeMode],
+    [handleRateApp, handleRestorePurchase, isDark, language, navigateToInfo, navigateToSubscription, toggleLangMenu, toggleThemeMode],
   );
   // --------------------- /RENDER VARS ---------------------- //
   // --------------------------------------------------------- //
@@ -241,7 +241,7 @@ const SettingsScreen = ({ navigation }) => {
                           />
                         </View>
                       }>
-                      {_.map(languages, ({ locale, title }) => (
+                      {_.map(Languages, ({ locale, title }) => (
                         <Menu.Item key={locale} onPress={() => updateLanguage(locale)} title={title} />
                       ))}
                     </Menu>
@@ -260,7 +260,7 @@ const SettingsScreen = ({ navigation }) => {
         ))}
       </ScrollView>
     ),
-    [styles, sections, languages, theme, openLangMenu, updateLanguage, toggleLangMenu],
+    [styles, sections, theme, openLangMenu, updateLanguage, toggleLangMenu],
   );
 
   return (
