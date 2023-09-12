@@ -9,7 +9,7 @@ export default theme =>
       justifyContent: 'center',
     },
     listContent: loading => ({
-      paddingTop: loading ? 50 : 10,
+      paddingTop: loading ? 50 : 0,
     }),
     loadingText: { marginTop: 20 },
     fab: {
