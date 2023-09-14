@@ -23,11 +23,6 @@ const Message = ({ flatListRef, question, answer }) => {
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
-  // useEffect(() => {
-  //   console.debug('answer', answer)
-  //   flatListRef.current && flatListRef.current.scrollToEnd({ animated: true });
-  // }, [flatListRef, answer]);
-
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
   const renderQuestionText = useMemo(

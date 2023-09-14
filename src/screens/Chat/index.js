@@ -12,6 +12,7 @@ import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
+import RegularButton from 'app/src/components/Buttons/Regular';
 import BackButton from 'app/src/components/Buttons/Back';
 import Conversation from './components/Conversation';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +31,6 @@ import { ASSISTANTS } from '../Assistants/data';
 import { isRTL, t } from '../../config/i18n';
 import { BASE_URL, API_KEY } from '@env';
 import makeStyles from './styles';
-import RegularButton from 'app/src/components/Buttons/Regular';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -40,9 +40,9 @@ const ChatScreen = ({ route, navigation }) => {
   // --------------------------------------------------------- //
   // ------------------------ REDUX -------------------------- //
   const dispatch = useDispatch();
-  const updateMessages = useCallback(payload => dispatch(setMessages(payload)), [dispatch]);
-  const updateMessageAnswer = useCallback(payload => dispatch(updateAnswer(payload)), [dispatch]);
   const updateConversationId = useCallback(payload => dispatch(setConversationId(payload)), [dispatch]);
+  const updateMessageAnswer = useCallback(payload => dispatch(updateAnswer(payload)), [dispatch]);
+  const updateMessages = useCallback(payload => dispatch(setMessages(payload)), [dispatch]);
 
   const ownedSubscription = useSelector(getOwnedSubscription);
   const conversationId = useSelector(getConversationId);
@@ -59,10 +59,10 @@ const ChatScreen = ({ route, navigation }) => {
 
   const es = useRef();
 
-  const [value, setValue] = useState();
-  const [loading, setLoading] = useState(false);
-  const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [openUsageModal, setOpenUsageModal] = useState(false);
+  const [loadingMsgs, setLoadingMsgs] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [value, setValue] = useState();
 
   const routeParams = route.params;
   const isAssistantChat = _.has(routeParams, 'id') && route.params.fromAssistants;
