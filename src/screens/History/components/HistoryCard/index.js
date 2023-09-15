@@ -2,8 +2,8 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import React, { useCallback } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { IconButton, useTheme } from 'react-native-paper';
+import { View, TouchableOpacity } from 'react-native';
+import { IconButton, useTheme, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
@@ -67,6 +67,11 @@ const HistoryCard = ({ item, index, refresh }) => {
           <Text variant="labelLarge" style={styles.title}>
             {item?.title}
           </Text>
+          {item?.assistant ? (
+            <Text variant="labelMedium" style={styles.assistant}>
+              {item?.assistant}
+            </Text>
+          ) : null}
           <Text variant="bodySmall" style={styles.date}>
             {item?.createdAt}
           </Text>

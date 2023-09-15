@@ -18,6 +18,7 @@ export default theme =>
       marginVertical: 40,
       alignItems: 'center',
     },
+    closeButton: { position: 'absolute' },
     freeMessagesTextBg: {
       width: '90%',
       padding: 15,
@@ -26,11 +27,17 @@ export default theme =>
       alignItems: 'center',
       backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.lightGray,
     },
+    availableMsgs: { textAlign: 'center' },
     upgradeButton: {
       width: '90%',
     },
     earnButton: {
       width: '90%',
       marginTop: 15,
+    },
+    playLottie: {
+      marginRight: 8,
+      height: 25,
+      transform: [{ scale: 1.1 }],
     },
   });

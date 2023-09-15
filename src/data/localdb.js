@@ -2,14 +2,14 @@ import _ from 'lodash';
 import * as SQLite from 'expo-sqlite';
 
 // Open the local stored database
-export const db = SQLite.openDatabase('localdata.db');
+export const db = SQLite.openDatabase('chatai.db');
 
 // Create the conversations table if it doesn't exist
 export const createTables = () => {
   return new Promise((resolve, reject) => {
     db.transaction(
       tx => {
-        tx.executeSql('CREATE TABLE IF NOT EXISTS conversations (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, createdAt TEXT);');
+        tx.executeSql('CREATE TABLE IF NOT EXISTS conversations (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, assistant TEXT, createdAt TEXT);');
         tx.executeSql(
           'CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conversationId INTEGER, question TEXT, answer TEXT, createdAt TEXT);',
         );
@@ -18,6 +18,7 @@ export const createTables = () => {
         reject();
       },
       () => {
+        console.info('[InitData] :: Created database tables');
         resolve();
       },
     );
@@ -32,18 +33,17 @@ export const addConversation = conversation => {
       return false;
     }
 
-    const { title, createdAt } = conversation;
+    const { title, assistant, createdAt } = conversation;
 
     db.transaction(tx => {
       tx.executeSql(
-        'INSERT INTO conversations (title, createdAt) VALUES (?, ?)',
-        [title, createdAt],
+        'INSERT INTO conversations (title, assistant, createdAt) VALUES (?, ?, ?)',
+        [title, assistant, createdAt],
         (t, res) => {
-          console.debug('res', res);
           resolve(res?.insertId);
         },
         (t, err) => {
-          // console.debug('[addConversation] :: ', err);
+          console.debug('[addConversation] :: ', err);
           reject();
         },
       );
@@ -149,7 +149,6 @@ export const addMessage = message => {
       if (_.isEmpty(message)) {
         return false;
       }
-      console.debug('message', message);
 
       const { conversationId, question, answer, createdAt } = message;
       db.transaction(tx => {

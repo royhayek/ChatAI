@@ -1,5 +1,5 @@
 {
-  "name": "chatgpt",
+  "name": "chatai",
   "version": "1.0.4",
   "scripts": {
     "lint": "eslint .",

@@ -1,10 +1,9 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTheme } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
-import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
@@ -13,20 +12,32 @@ import makeStyles from './styles';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENT ------------------------- //
 // ------------------------------------------------------------ //
-const SplashScreen = () => {
+const SplashScreen = ({ loadedData }) => {
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
   const styles = makeStyles(theme);
 
   const [showSplash, setShowSplash] = useState(true);
+  const [animationFinished, setAnimationFinished] = useState(false);
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
   // --------------------------------------------------------- //
   // ----------------------- CALLBACKS ----------------------- //
-  const handleAnimationFinish = useCallback(() => setShowSplash(false), []);
+  const handleAnimationFinish = useCallback(async () => {
+    setAnimationFinished(true);
+    loadedData && setShowSplash(false);
+  }, [loadedData]);
   // ---------------------- /CALLBACKS ----------------------- //
+  // --------------------------------------------------------- //
+
+  // --------------------------------------------------------- //
+  // ------------------------ EFFECTS ------------------------ //
+  useEffect(() => {
+    loadedData && animationFinished && setShowSplash(false);
+  }, [animationFinished, loadedData]);
+  // ----------------------- /EFFECTS ------------------------ //
   // --------------------------------------------------------- //
 
   // --------------------------------------------------------- //

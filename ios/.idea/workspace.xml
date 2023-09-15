@@ -5,14 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0c4a0e78-999c-4e8b-b7c9-779687e5af57" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ios.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChatAI.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/ChatAI.xcodeproj/project.pbxproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChatAI.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/navigation/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/navigation/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/screens/Settings/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/screens/Settings/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/Root.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/Root.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/components/Usage/Pie/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/components/Usage/Pie/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/data/localdb.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/data/localdb.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/redux/reducers.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/redux/reducers.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/screens/Chat/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/screens/Chat/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/screens/History/components/HistoryCard/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/screens/History/components/HistoryCard/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/screens/History/components/HistoryCard/styles.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/screens/History/components/HistoryCard/styles.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/screens/Splash/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/screens/Splash/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../src/services/SubscriptionManager.js" beforeDir="false" afterPath="$PROJECT_DIR$/../src/services/SubscriptionManager.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

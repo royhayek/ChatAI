@@ -105,6 +105,7 @@ const ChatScreen = ({ route, navigation }) => {
   const createConversation = async message => {
     const newConversation = {
       title: message,
+      assistant: assistant?.name[language],
       createdAt: new Date().toLocaleString(),
     };
     return await addConversation(newConversation);
@@ -137,7 +138,6 @@ const ChatScreen = ({ route, navigation }) => {
   const handleSubmitPrompt = useCallback(
     async message => {
       Keyboard.dismiss();
-
       if (messagesCount >= dailyMessagesLimit && !ownedSubscription) {
         setOpenUsageModal(true);
         return;
