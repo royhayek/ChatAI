@@ -44,13 +44,14 @@ export default theme =>
       marginTop: 20,
       marginBottom: 10,
     },
-    planContainer: isSelected => ({
+    planContainer: (isSelected, isOwned) => ({
+      marginBottom: 4,
       borderWidth: 1.5,
       borderRadius: 18,
       paddingVertical: 10,
       paddingHorizontal: 20,
-      borderColor: isSelected ? theme.colors.primary : theme.colors.backdrop,
-      backgroundColor: isSelected ? theme.colors.primaryLight : 'transparent',
+      borderColor: isSelected || isOwned ? theme.colors.primary : theme.colors.backdrop,
+      backgroundColor: isSelected || isOwned ? theme.colors.primaryLight : 'transparent',
     }),
     planTitle: {
       marginBottom: 3,
@@ -85,5 +86,15 @@ export default theme =>
     referText: {
       textAlign: 'center',
       color: theme.colors.secondary,
+    },
+    ownBadge: {
+      top: -10,
+      right: 15,
+      position: 'absolute',
+      paddingHorizontal: 10,
+      backgroundColor: theme.colors.primary,
+    },
+    badgeText: {
+      color: theme.colors.white,
     },
   });

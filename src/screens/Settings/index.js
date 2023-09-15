@@ -53,7 +53,7 @@ const SettingsScreen = ({ navigation }) => {
 
   const navigateToInfo = useCallback(
     (type, options) => {
-      navigation.navigate('Info', { type, name: _t(type, options) });
+      navigation.push('Info', { type, name: _t(type, options) });
     },
     [navigation],
   );
