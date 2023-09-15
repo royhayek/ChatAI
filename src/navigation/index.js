@@ -1,7 +1,7 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +19,7 @@ import InfoScreen from '../screens/Info';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { isRTL, t } from '../config/i18n';
+import { t } from '../config/i18n';
 import { I18nManager, Platform } from 'react-native';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
@@ -85,15 +85,6 @@ const RootNavigation = () => {
   const SettingsStackScreen = () => (
     <SettingsStack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
       <SettingsStack.Screen name="Settings" component={SettingsScreen} options={{ title: _t('settings'), ...screenOptions }} />
-      <SettingsStack.Screen name="Info" component={InfoScreen} options={({ route }) => ({ title: route.params?.name, ...screenOptions })} />
-      <SettingsStack.Screen
-        name="Subscription"
-        component={SubscriptionScreen}
-        options={{
-          title: '',
-          ...screenOptions,
-        }}
-      />
     </SettingsStack.Navigator>
   );
 
@@ -141,6 +132,7 @@ const RootNavigation = () => {
       <Stack.Screen name="Home" component={Tabs} />
       <Stack.Screen name="Chat" component={ChatScreen} options={{ title: _t('chat'), ...screenOptions }} />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{ title: '', ...screenOptions }} />
+      <SettingsStack.Screen name="Info" component={InfoScreen} options={({ route }) => ({ title: route.params?.name, ...screenOptions })} />
     </Stack.Navigator>
   );
 };

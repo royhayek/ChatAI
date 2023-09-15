@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { NativeModules, ScrollView, TouchableOpacity, View } from 'react-native';
 import { getPurchaseHistoryAsync } from 'expo-in-app-purchases';
 import { requestSubscription } from 'react-native-iap';
-import { useTheme, Text } from 'react-native-paper';
+import { useTheme, Text, Badge } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
 import { useSelector } from 'react-redux';
 import _ from 'lodash';
@@ -122,24 +122,31 @@ const SubscriptionScreen = ({ navigation }) => {
         {_.map(subscriptions, subscription => {
           const subscriptionOfferDetails = _.first(subscription.subscriptionOfferDetails);
           const isSelected = _.isEqual(selectedPlan, subscriptionOfferDetails);
+          const isOwned = _.isEqual(ownedSubscription, subscriptionOfferDetails?.basePlanId);
           const pricingPhase = _.first(subscriptionOfferDetails.pricingPhases.pricingPhaseList);
           return (
             <TouchableOpacity
+              disabled={isOwned}
               key={subscriptionOfferDetails?.basePlanId}
               onPress={() => setSelectedPlan(subscriptionOfferDetails)}
-              style={styles.planContainer(isSelected)}>
+              style={styles.planContainer(isSelected, isOwned)}>
               <Text variant="bodyMedium" style={styles.planTitle}>
                 {_t(pricingPhase.billingPeriod)}
               </Text>
               <Text variant="bodyLarge" style={styles.planPrice}>
                 {pricingPhase.formattedPrice} {/* /{plan?.unit} */}
               </Text>
+              <Badge style={styles.ownBadge}>
+                <Text variant="labelSmall" style={styles.badgeText}>
+                  {_t('you_own_this_plan')}
+                </Text>
+              </Badge>
             </TouchableOpacity>
           );
         })}
       </View>
     ),
-    [selectedPlan, styles, subscriptions],
+    [ownedSubscription, selectedPlan, styles, subscriptions],
   );
 
   const renderEmptySubscriptions = useMemo(
