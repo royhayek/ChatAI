@@ -2,8 +2,8 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import { useCallback, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Alert, Platform } from 'react-native';
 import {
   clearTransactionIOS,
   endConnection,
@@ -50,7 +50,7 @@ const SubscriptionManager = () => {
       console.debug('[PURCHASE HISTORY] :: ', { history });
       console.debug('[AVAILABLE PURCHASES] :: ', { purchases });
     } catch (error) {
-      console.debug('[fetchAvailablePurchases] - ERROR :: ', error);
+      console.error('[fetchAvailablePurchases] - ERROR :: ', error);
     }
   };
   // ---------------------- /CALLBACKS ----------------------- //
@@ -86,7 +86,7 @@ const SubscriptionManager = () => {
         updateSubscriptions(subscriptions);
       })
       .catch(error => {
-        console.log('Error setting up subscriptions:', error);
+        console.error('Error setting up subscriptions:', error);
       });
 
     const purchaseUpdate = purchaseUpdatedListener(async purchase => {

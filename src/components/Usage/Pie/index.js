@@ -11,6 +11,7 @@ import PT from 'prop-types';
 // ------------------------------------------------------------ //
 import { getConfiguration, getMessagesCount } from 'app/src/redux/selectors';
 import { isRTL } from 'app/src/config/i18n';
+import useStyles from './styles';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -19,14 +20,15 @@ const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
   // ----------------------- REDUX --------------------------- //
   const messagesCount = useSelector(getMessagesCount);
   const config = useSelector(getConfiguration);
-  const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   // ----------------------- /REDUX -------------------------- //
   // --------------------------------------------------------- //
 
   // --------------------------------------------------------- //
   // ----------------------- STATICS ------------------------- //
   const theme = useTheme();
+  const styles = useStyles(theme);
 
+  const dailyMessagesLimit = config?.other?.dailyMessagesLimit;
   const suffix = ` / ${dailyMessagesLimit}`;
   const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [dailyMessagesLimit, messagesCount]);
   // ----------------------- /STATICS ------------------------ //
@@ -40,15 +42,15 @@ const Pie = ({ radius, hasSuffix, activeStrokeWidth, inActiveStrokeWidth }) => {
       value={availableMsgsCount}
       maxValue={dailyMessagesLimit}
       inActiveStrokeOpacity={0.5}
-      valueSuffixStyle={{ fontSize: 16 }}
-      valuePrefixStyle={{ fontSize: 16 }}
+      valueSuffixStyle={styles.valueText}
+      valuePrefixStyle={styles.valueText}
       activeStrokeWidth={activeStrokeWidth}
-      inActiveStrokeWidth={inActiveStrokeWidth}
-      progressValueColor={theme.dark ? theme.colors.white : theme.colors.black}
       activeStrokeColor={theme.colors.primary}
-      inActiveStrokeColor={theme.dark ? theme.colors.pieBlue : theme.colors.secondary}
+      inActiveStrokeWidth={inActiveStrokeWidth}
       valuePrefix={hasSuffix && isRTL ? suffix : ''}
       valueSuffix={hasSuffix && !isRTL ? suffix : ''}
+      progressValueColor={theme.dark ? theme.colors.white : theme.colors.black}
+      inActiveStrokeColor={theme.dark ? theme.colors.pieBlue : theme.colors.secondary}
     />
   );
 };

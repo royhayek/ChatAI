@@ -95,9 +95,10 @@ const Usage = ({ open, onClose }) => {
       setLoadedAd(true);
     });
 
-    const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async () => {
+    const unsubscribeEarned = rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async reward => {
+      const rewardedAmount = __DEV__ ? 1 : Number(reward.amount);
       const updates = {};
-      updates[`users/${deviceUuid}/messagesCount`] = increment(-1);
+      updates[`users/${deviceUuid}/messagesCount`] = increment(-rewardedAmount);
       updates[`users/${deviceUuid}/lastRewardedDate`] = today;
       update(ref(FIREBASE_DB), updates);
       setLoadedAd(false);
@@ -117,7 +118,6 @@ const Usage = ({ open, onClose }) => {
   useEffect(() => {
     if (!loadedAd) {
       const interval = setInterval(() => {
-        console.debug('Trying to load a new Ad');
         rewarded.load();
       }, 10000);
 
@@ -131,6 +131,11 @@ const Usage = ({ open, onClose }) => {
 
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
+  const renderCloseIcon = useCallback(
+    () => <Ionicons name="md-close" size={25} color={theme.dark ? theme.colors.white : theme.colors.black} />,
+    [theme.colors.black, theme.colors.white, theme.dark],
+  );
+
   return (
     <>
       <TouchableOpacity onPress={handleOnPress}>
@@ -142,18 +147,12 @@ const Usage = ({ open, onClose }) => {
           <Text variant="titleMedium" style={styles.bottomSheetTitle}>
             {_t('daily_free_usage')}
           </Text>
-          <IconButton
-            size={22}
-            rippleColor="transparent"
-            style={{ position: 'absolute' }}
-            onPress={handleSheetClose}
-            icon={() => <Ionicons name="md-close" size={25} color={theme.dark ? theme.colors.white : theme.colors.black} />}
-          />
+          <IconButton size={22} rippleColor="transparent" style={styles.closeButton} onPress={handleSheetClose} icon={renderCloseIcon} />
         </View>
         <View style={styles.bottomSheetContent}>
           <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />
           <View style={styles.freeMessagesTextBg}>
-            <Text variant="labelMedium" style={{ textAlign: 'center' }}>
+            <Text variant="labelMedium" style={styles.availableMsgs}>
               {availableMsgsCount > 0 ? _t('free_messages_daily', { name: appName, number: 5 }) : _t('hit_limit')}
             </Text>
           </View>
@@ -164,20 +163,7 @@ const Usage = ({ open, onClose }) => {
             style={styles.earnButton}
             onPress={handleEarnClick}
             backgroundColors={['#FF3F3F', '#FF2020', '#FF0000']}
-            startIcon={
-              <LottieView
-                autoSize
-                autoPlay
-                style={[
-                  {
-                    marginRight: 8,
-                    height: 25,
-                    transform: [{ scale: 1.1 }],
-                  },
-                ]}
-                source={require('../../../assets/play-video.json')}
-              />
-            }
+            startIcon={<LottieView autoSize autoPlay style={styles.playLottie} source={require('../../../assets/play-video.json')} />}
           />
         </View>
       </CustomBottomSheet>

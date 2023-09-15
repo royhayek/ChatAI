@@ -20,8 +20,12 @@ export default theme =>
     title: {
       color: theme.dark ? theme.colors.white : theme.colors.black,
     },
+    assistant: {
+      marginVertical: 3,
+      color: theme.colors.primary,
+    },
     date: {
-      marginTop: 5,
+      marginTop: 2,
       color: theme.colors.secondary,
     },
   });
