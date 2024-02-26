@@ -2,7 +2,8 @@
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { I18nManager, Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, View } from 'react-native';
+import { I18nManager, Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Divider, IconButton, TextInput, useTheme } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { increment, ref, update } from 'firebase/database';
@@ -62,7 +63,9 @@ const ChatScreen = ({ route, navigation }) => {
   const [openUsageModal, setOpenUsageModal] = useState(false);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState();
+  const [valuee, setValue] = useState();
+
+  const abortControllerRef = useRef(null);
 
   const routeParams = route.params;
   const isAssistantChat = _.has(routeParams, 'id') && route.params.fromAssistants;
@@ -137,6 +140,8 @@ const ChatScreen = ({ route, navigation }) => {
 
   const handleSubmitPrompt = useCallback(
     async message => {
+      let newContent = '';
+
       Keyboard.dismiss();
       if (messagesCount >= dailyMessagesLimit && !ownedSubscription) {
         setOpenUsageModal(true);
@@ -145,6 +150,9 @@ const ChatScreen = ({ route, navigation }) => {
 
       setLoading(true);
       let id = conversationId ?? null;
+
+      // Create a new abort controller instance for this fetch
+      abortControllerRef.current = new AbortController();
 
       // Create a new conversation if it doesn't exist
       const existingMessages = conversationId ? await getMessagesByConversation(conversationId) : [];
@@ -168,103 +176,115 @@ const ChatScreen = ({ route, navigation }) => {
       // Save inital message in local storage
       const messageId = await createMessage(newMessageModel);
 
-      let newContent = '';
-
       const url = `${BASE_URL}${Endpoints.TEXT_COMPLETIONS_TURBO}`;
 
       // Parameters to pass to the API
       const data = {
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4',
         messages: [...apiMessages, { content: message, role: 'user' }],
-        temperature: 0.66,
-        top_p: 1.0,
-        max_tokens: 1000,
+        temperature: 0.7,
         stream: true,
-        n: 1,
       };
 
-      // Initiate the requests
-      es.current = new EventSource(url, {
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        reactNative: { textStreaming: true },
+        signal: abortControllerRef.current.signal,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${API_KEY}`,
         },
-        method: 'POST',
-        body: JSON.stringify(data),
-        pollingInterval: 5000,
-      });
+      })
+        .then(response => response.body)
+        .then(async stream => {
+          const reader = stream.getReader();
+          let decoder = new TextDecoder();
+          let contentBuffer = '';
 
-      // Listen the server until the last piece of text
-      const listener = async event => {
-        if (event.type === 'open') {
-          console.info('Opened an SSE connection');
-
-          // Clear the prompt
-          setValue('');
-        } else if (event.type === 'close') {
-          console.info('Closed SSE connection');
-          setLoading(false);
-          // Update the last message in the state
-          updateMessageAnswer(newContent);
-          // Update answer in local storage before closing
-          updateAnswerInDb(newContent, messageId);
-        } else if (event.type === 'message') {
-          if (event.data !== '[DONE]') {
-            // get every piece of text
-            const parsedData = JSON.parse(event.data);
-            const delta = parsedData.choices[0].delta;
-
-            // Check if is the last text to close the events request
-            const finish_reason = parsedData.choices[0].finish_reason;
-
-            if (finish_reason === 'stop') {
-              // Update answer in local storage
+          const processStream = ({ done, value }) => {
+            if (done) {
+              console.info('[handleSubmitPrompt] :: Done reading the stream');
+              setLoading(false);
+              updateMessageAnswer(newContent);
               updateAnswerInDb(newContent, messageId);
-
-              // Update the message count and last sent date in storage
               updateMessageCount();
-
-              // Close event source to prevent memory leak
-              es.current.close();
-            } else {
-              if (delta && delta.content) {
-                // Update content with new data
-                newContent += delta.content;
-
-                // Continuously update the last message in the state with new piece of data
-                updateMessageAnswer(newContent);
-              }
+              return;
             }
-          } else {
-            es.current.close();
-          }
-        } else if (event.type === 'error') {
-          console.error('Event Source Connection error:', event.message);
-        } else if (event.type === 'exception') {
-          console.error('Event Source Error (Exception):', event.message, event.error);
-        }
-      };
 
-      // Add listeners
-      es.current.addEventListener('open', listener);
-      es.current.addEventListener('message', listener);
-      es.current.addEventListener('close', listener);
-      es.current.addEventListener('error', listener);
+            // Decode the stream chunk
+            const chunk = decoder.decode(value, { stream: true });
+            contentBuffer += chunk;
 
-      return () => {
-        // Remove listeners and close event source to prevent memory leak
-        es.current.removeAllEventListeners();
-        es.current.close();
-      };
+            // Process each line in the buffer
+            let lines = contentBuffer.split('\n');
+            // Handle any incomplete line by pushing it back to the buffer
+            contentBuffer = lines.pop();
+
+            lines.forEach(line => {
+              if (line.startsWith('data: ')) {
+                const parsedData = JSON.parse(line.replace('data: ', ''));
+                if (parsedData.choices && parsedData.choices[0] && parsedData.choices[0].delta && parsedData.choices[0].delta.content) {
+                  const content = parsedData.choices[0].delta.content;
+
+                  newContent += content;
+
+                  // Continuously update the last message in the state with new piece of data
+                  updateMessageAnswer(newContent);
+                } else if (
+                  parsedData.choices &&
+                  parsedData.choices[0] &&
+                  parsedData.choices[0].finish_reason &&
+                  _.isEqual(parsedData.choices[0].finish_reason, 'stop')
+                ) {
+                  console.info('[handleSubmitPrompt] :: Stopped reading the stream');
+                  updateAnswerInDb(newContent, messageId);
+                  updateMessageCount();
+                  setLoading(false);
+                  setValue('');
+                }
+              }
+            });
+
+            // Continue reading the stream
+            reader
+              .read()
+              .then(processStream)
+              .catch(error => {
+                console.info('[handleSubmitPrompt] :: Fetch aborted');
+                if (error.name === 'AbortError') {
+                  setLoading(false);
+                  updateMessageAnswer(newContent);
+                  updateAnswerInDb(newContent, messageId);
+                } else {
+                  console.info('Stream reading error:', error);
+                }
+              });
+          };
+
+          // Start reading the stream
+          reader
+            .read()
+            .then(processStream)
+            .catch(error => {
+              console.error('Initial read error', error);
+              setLoading(false);
+            });
+        })
+        .catch(error => {
+          console.info('Fetch aborted', error);
+          setLoading(false);
+        });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [apiMessages, conversationId, dailyMessagesLimit, ownedSubscription, messagesCount],
   );
 
   const handleStopGeneration = useCallback(() => {
-    es.current && es.current.close();
+    abortControllerRef.current && abortControllerRef.current.abort();
+    setValue('');
     setLoading(false);
-  }, []);
+  }, [abortControllerRef]);
 
   const renderUsagePie = useMemo(
     () => !ownedSubscription && <Usage open={openUsageModal} onClose={setOpenUsageModal} radius={14} />,
@@ -320,14 +340,14 @@ const ChatScreen = ({ route, navigation }) => {
   const renderIntro = useMemo(
     () => (
       <Intro
-        value={value}
+        value={valuee}
         setValue={setValue}
         handleSubmit={handleSubmitPrompt}
         isAssistant={isAssistantChat}
         questions={assistant?.questions[language]}
       />
     ),
-    [assistant?.questions, handleSubmitPrompt, isAssistantChat, language, value],
+    [assistant?.questions, handleSubmitPrompt, isAssistantChat, language, valuee],
   );
 
   const renderConversation = useMemo(
@@ -337,37 +357,33 @@ const ChatScreen = ({ route, navigation }) => {
 
   const renderMessageInputField = useMemo(
     () => (
-      <SafeAreaView>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : 'height'} keyboardVerticalOffset={100}>
-          <TextInput
-            multiline
-            value={value}
-            mode="outlined"
-            style={styles.input}
-            returnKeyType="send"
-            verticalAlign="middle"
-            outlineColor="transparent"
-            onSubmitEditing={Keyboard.dismiss}
-            onChangeText={handleValueChange}
-            activeOutlineColor="transparent"
-            placeholder={_t('send_a_message')}
-            underlineStyle={styles.underline}
-            placeholderTextColor={theme.colors.secondary}
-            right={
-              <TextInput.Icon
-                centered
-                icon="send"
-                disabled={_.isEmpty(value)}
-                iconColor={theme.colors.secondary}
-                onPress={() => handleSubmitPrompt(value)}
-                style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
-              />
-            }
+      <TextInput
+        multiline
+        value={valuee}
+        mode="outlined"
+        style={styles.input}
+        returnKeyType="send"
+        verticalAlign="middle"
+        outlineColor="transparent"
+        onSubmitEditing={Keyboard.dismiss}
+        onChangeText={handleValueChange}
+        activeOutlineColor="transparent"
+        placeholder={_t('send_a_message')}
+        underlineStyle={styles.underline}
+        placeholderTextColor={theme.colors.secondary}
+        right={
+          <TextInput.Icon
+            centered
+            icon="send"
+            disabled={_.isEmpty(valuee)}
+            iconColor={theme.colors.secondary}
+            onPress={() => handleSubmitPrompt(valuee)}
+            style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }}
           />
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+        }
+      />
     ),
-    [handleSubmitPrompt, handleValueChange, styles.input, styles.underline, theme.colors.secondary, value],
+    [handleSubmitPrompt, handleValueChange, styles.input, styles.underline, theme.colors.secondary, valuee],
   );
 
   const renderStopButn = useMemo(
@@ -384,15 +400,16 @@ const ChatScreen = ({ route, navigation }) => {
   );
 
   return (
-    <View style={styles.container} onPress={() => Keyboard.dismiss()}>
-      <View style={styles.flex1}>
-        {_.isEmpty(messages) ? renderIntro : renderConversation}
-        {loading ? renderStopButn : null}
-      </View>
+    <View style={styles.container}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.flex1} onPress={() => Keyboard.dismiss()} extraScrollHeight={35}>
+        <View style={styles.flex1}>
+          {_.isEmpty(messages) ? renderIntro : renderConversation}
+          {loading ? renderStopButn : null}
+          <Divider style={styles.divider} />
+        </View>
 
-      <Divider style={styles.divider} />
-
-      {renderMessageInputField}
+        {renderMessageInputField}
+      </KeyboardAwareScrollView>
     </View>
   );
 };

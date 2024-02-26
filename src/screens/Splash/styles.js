@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
@@ -10,7 +11,7 @@ export default theme =>
       backgroundColor: theme.dark ? theme.colors.background : theme.colors.white,
     },
     lottie: {
-      width: 130,
-      height: 130,
+      width: ms(130),
+      height: mvs(130),
     },
   });

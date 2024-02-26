@@ -1,11 +1,12 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback } from 'react';
-import { View, TouchableOpacity } from 'react-native';
 import { IconButton, useTheme, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { View, TouchableOpacity } from 'react-native';
+import { ms } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
@@ -55,14 +56,14 @@ const HistoryCard = ({ item, index, refresh }) => {
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
   const renderDeleteIcon = useCallback(
-    () => <Ionicons name="ios-close" size={20} color={theme.dark ? theme.colors.white : theme.colors.black} />,
+    () => <Ionicons name="ios-close" size={ms(20)} color={theme.dark ? theme.colors.white : theme.colors.black} />,
     [theme.colors.black, theme.colors.white, theme.dark],
   );
 
   return (
     <>
       <TouchableOpacity key={index} onPress={() => handleTextPress(item)} style={styles.container}>
-        <Ionicons name="md-chatbox-outline" size={20} color={theme.dark ? theme.colors.white : theme.colors.black} />
+        <Ionicons name="md-chatbox-outline" size={ms(20)} color={theme.dark ? theme.colors.white : theme.colors.black} />
         <View style={styles.content}>
           <Text variant="labelLarge" style={styles.title}>
             {item?.title}
@@ -77,7 +78,7 @@ const HistoryCard = ({ item, index, refresh }) => {
           </Text>
         </View>
         <IconButton
-          size={17}
+          size={ms(17)}
           mode="outlined"
           icon={renderDeleteIcon}
           containerColor={theme.colors.background}

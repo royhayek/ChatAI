@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
@@ -9,26 +10,26 @@ export default theme =>
       backgroundColor: theme.colors.background,
     },
     contentContainer: {
-      paddingBottom: 30,
-      paddingHorizontal: 16,
+      paddingBottom: mvs(30),
+      paddingHorizontal: ms(16),
     },
     icon: {
-      width: 70,
-      height: 70,
-      marginEnd: 16,
-      borderRadius: 50,
+      width: ms(70),
+      height: mvs(70),
+      marginEnd: ms(16),
+      borderRadius: ms(50),
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.primaryLight,
     },
-    name: { marginBottom: 5 },
+    name: { marginBottom: mvs(5) },
     flatList: {
-      marginTop: 16,
+      marginTop: mvs(16),
     },
     question: {
-      marginBottom: 10,
+      marginBottom: mvs(10),
       flexDirection: 'row',
       alignItems: 'center',
     },
-    divider: { marginBottom: 10 },
+    divider: { marginBottom: mvs(10) },
   });

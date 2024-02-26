@@ -1,10 +1,11 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback } from 'react';
 import { View, TouchableOpacity, Keyboard } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
+import { ms } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
@@ -55,7 +56,7 @@ const Intro = ({ setValue, handleSubmit, isAssistant, questions }) => {
       <View style={styles.row}>
         {!isAssistant && (
           <>
-            <Ionicons name="ios-sunny-outline" size={24} color={theme.dark ? theme.colors.white : theme.colors.black} />
+            <Ionicons name="ios-sunny-outline" size={ms(24)} color={theme.dark ? theme.colors.white : theme.colors.black} />
             <View style={styles.hSpacer} />
           </>
         )}

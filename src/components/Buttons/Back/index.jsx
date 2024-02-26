@@ -1,10 +1,11 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React from 'react';
 import { IconButton, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { ms } from 'react-native-size-matters';
 import PT from 'prop-types';
+import React from 'react';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
@@ -27,7 +28,7 @@ const BackButton = ({ title, onPress, ...props }) => {
   // ----------------------- RENDERERS ----------------------- //
   return (
     <IconButton
-      size={18}
+      size={ms(18)}
       style={styles.container}
       onPress={() => navigation.goBack()}
       icon={() => (

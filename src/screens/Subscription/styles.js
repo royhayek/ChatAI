@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
@@ -7,20 +8,20 @@ export default theme =>
       backgroundColor: theme.colors.background,
     },
     scrollViewContent: {
-      padding: 16,
+      padding: ms(16),
     },
     title: {
-      marginTop: 5,
+      marginTop: mvs(5),
       fontWeight: 'bold',
       textAlign: 'center',
     },
     benefitsContainer: {
-      gap: 20,
-      marginTop: 20,
-      borderRadius: 18,
-      marginHorizontal: 8,
-      paddingVertical: 24,
-      paddingHorizontal: 16,
+      gap: ms(20),
+      marginTop: mvs(20),
+      borderRadius: ms(18),
+      marginHorizontal: ms(8),
+      paddingVertical: mvs(24),
+      paddingHorizontal: ms(16),
       backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.white,
     },
     benefitContainer: {
@@ -28,7 +29,7 @@ export default theme =>
       alignItems: 'center',
     },
     benefitTexts: {
-      marginStart: 15,
+      marginStart: ms(15),
     },
     benefitTitle: {
       fontWeight: 'bold',
@@ -40,21 +41,21 @@ export default theme =>
       color: theme.dark ? theme.colors.white : theme.colors.white,
     },
     plansContainer: {
-      gap: 8,
-      marginTop: 20,
-      marginBottom: 10,
+      gap: ms(8),
+      marginTop: mvs(20),
+      marginBottom: mvs(10),
     },
     planContainer: (isSelected, isOwned) => ({
-      marginBottom: 4,
-      borderWidth: 1.5,
-      borderRadius: 18,
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderColor: isSelected || isOwned ? theme.colors.primary : theme.colors.backdrop,
+      marginBottom: mvs(4),
+      borderWidth: ms(1.5),
+      borderRadius: ms(18),
+      paddingVertical: mvs(10),
+      paddingHorizontal: ms(20),
       backgroundColor: isSelected || isOwned ? theme.colors.primaryLight : 'transparent',
+      borderColor: isSelected ? theme.colors.primary : isOwned ? theme.colors.secondary : theme.colors.backdrop,
     }),
     planTitle: {
-      marginBottom: 3,
+      marginBottom: mvs(3),
       fontWeight: 'bold',
       textAlign: 'center',
       color: theme.colors.secondary,
@@ -64,7 +65,7 @@ export default theme =>
       textAlign: 'center',
     },
     cancelText: {
-      marginTop: 8,
+      marginTop: mvs(8),
       textAlign: 'center',
       color: theme.colors.secondary,
     },
@@ -74,24 +75,24 @@ export default theme =>
       justifyContent: 'center',
     },
     lottie: {
-      width: 150,
-      height: 150,
+      width: ms(150),
+      height: mvs(150),
       alignSelf: 'center',
     },
     noSubscriptionsText: {
-      textAlign: 'center',
-      marginBottom: 10,
       fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: mvs(10),
     },
     referText: {
       textAlign: 'center',
       color: theme.colors.secondary,
     },
     ownBadge: {
-      top: -10,
-      right: 15,
+      top: mvs(-10),
+      right: ms(15),
       position: 'absolute',
-      paddingHorizontal: 10,
+      paddingHorizontal: ms(10),
       backgroundColor: theme.colors.primary,
     },
     badgeText: {
