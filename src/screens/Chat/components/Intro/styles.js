@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
@@ -13,17 +14,17 @@ export default theme =>
       marginBottom: 10,
     },
     hSpacer: {
-      width: 4,
+      width: ms(4),
     },
     hint: {
       fontWeight: 'bold',
       textAlign: 'center',
     },
     exampleContainer: {
-      padding: 12,
-      borderRadius: 6,
-      marginVertical: 8,
-      marginHorizontal: 24,
+      padding: ms(12),
+      borderRadius: ms(6),
+      marginVertical: mvs(8),
+      marginHorizontal: ms(24),
       shadowRadius: 3,
       shadowColor: theme.colors.shadow,
       shadowOpacity: theme.dark ? 0.6 : 0,
@@ -31,7 +32,7 @@ export default theme =>
       backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.white,
     },
     example: {
-      fontWeight: '500',
+      fontWeight: 500,
       textAlign: 'center',
       color: theme.dark ? theme.colors.white : theme.colors.black,
     },

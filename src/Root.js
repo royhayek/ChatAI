@@ -27,11 +27,12 @@ import { getLanguage, getThemeMode } from './redux/selectors';
 import { registerForPushNotificationsAsync } from './helpers';
 import { darkTheme, lightTheme } from './lib/theme';
 import NetworkInfo from './services/NetworkInfo';
-import { FIREBASE_DB } from 'app/firebaseConfig';
+import { FIREBASE_ANALYTICS, FIREBASE_DB } from 'app/firebaseConfig';
 import { Firebase } from './config/constants';
 import { createTables } from './data/localdb';
 import { changeLocale } from './config/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logEvent } from 'firebase/analytics';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -93,14 +94,20 @@ const Root = () => {
     }
   }, [updateDeviceUuid]);
 
-  const getConfiguration = useCallback(async () => {
+  const getConfiguration = useCallback(() => {
     try {
-      const configRef = ref(FIREBASE_DB, Firebase.CONFIGURATION_REF);
-      onValue(configRef, snapshot => {
-        const data = snapshot.val();
-        updateConfiguration(data);
-        setLoadedData(true);
-        console.info('[InitData] :: Loaded and stored configuration');
+      return new Promise((resolve, reject) => {
+        const configRef = ref(FIREBASE_DB, Firebase.CONFIGURATION_REF);
+        onValue(configRef, snapshot => {
+          if (snapshot.val()) {
+            const data = snapshot.val();
+            updateConfiguration(data);
+            console.info('[InitData] :: Loaded and stored configuration');
+            resolve(data);
+          } else {
+            reject();
+          }
+        });
       });
     } catch (e) {
       console.error('[getConfiguration] - ERROR :: ', e);
@@ -109,32 +116,40 @@ const Root = () => {
 
   // Function to initialize the message count from storage
   const checkDailyMessageCount = useCallback(async () => {
-    const id = await getOrGenerateUUID();
-    const today = new Date().toISOString().split('T')[0];
-    try {
-      const messagesRef = ref(FIREBASE_DB, `users/${id}`);
-      onValue(messagesRef, snapshot => {
-        const userData = snapshot.val();
-        if (userData && userData.lastMessageDate === today) {
-          updateMessagesCount(userData.messagesCount || 0);
-        }
-      });
+    return new Promise(async (resolve, reject) => {
+      const id = await getOrGenerateUUID();
+      const today = new Date().toISOString().split('T')[0];
+      try {
+        const messagesRef = ref(FIREBASE_DB, `users/${id}`);
+        onValue(messagesRef, snapshot => {
+          const userData = snapshot.val();
+          if (userData && userData.lastMessageDate === today) {
+            updateMessagesCount(userData.messagesCount || 0);
+          }
+        });
 
-      updateMessagesCount(0); // Start with 0 if it's a new day
-      console.info('[InitData] :: Loaded and stored daily messages');
-    } catch (error) {
-      console.error('Error checking daily message count:', error);
-      return 0;
-    }
+        updateMessagesCount(0); // Start with 0 if it's a new day
+        console.info('[InitData] :: Loaded and stored daily messages');
+        resolve();
+      } catch (error) {
+        console.error('Error checking daily message count:', error);
+        reject();
+        return 0;
+      }
+    });
   }, [getOrGenerateUUID, updateMessagesCount]);
 
   const initAppPurchases = useCallback(async () => {
-    try {
-      await connectAsync();
-      console.info('[InitData] :: Initialized in-app purchases');
-    } catch (error) {
-      console.error('[initAppPurchases] - ERROR :: ', error);
-    }
+    return new Promise(async (resolve, reject) => {
+      try {
+        await connectAsync();
+        console.info('[InitData] :: Initialized in-app purchases');
+        resolve();
+      } catch (error) {
+        console.error('[initAppPurchases] - ERROR :: ', error);
+        reject();
+      }
+    });
   }, []);
 
   const initData = useCallback(async () => {
@@ -142,7 +157,8 @@ const Root = () => {
     await getConfiguration();
     await checkDailyMessageCount();
     await createTables();
-    await initAppPurchases();
+    initAppPurchases();
+    setLoadedData(true);
   }, [checkDailyMessageCount, getConfiguration, initAppPurchases, language]);
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //

@@ -17,6 +17,7 @@ export const chatSlice = createSlice({
       state.messages = action.payload;
     },
     updateAnswer: (state, action) => {
+      console.debug('updateAnswer', action.payload, state.messages);
       const first = _.first(state.messages);
       first.answer = action.payload;
       // const last = _.clone(state.messages);

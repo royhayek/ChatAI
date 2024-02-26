@@ -1,7 +1,7 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import { Platform } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
@@ -12,6 +12,14 @@ export const isAndroid = Platform.OS === 'android';
 
 // --------------------------------------------------------- //
 // ---------------------- HELPERS -------------------------- //
+export const scaledFontSize = baseFontSize => {
+  const widthRatio = Dimensions.get('screen').width / 430;
+  const heightRatio = Dimensions.get('screen').height / 932;
+  const maxRatio = Math.max(widthRatio, heightRatio);
+
+  return Device.deviceType === Device.DeviceType.PHONE ? Math.round(baseFontSize * maxRatio) : baseFontSize;
+};
+
 export const wait = timeout => {
   return new Promise(resolve => {
     setTimeout(resolve, timeout);

@@ -1,11 +1,12 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React from 'react';
-import { ScrollView, useWindowDimensions } from 'react-native';
+import { SafeAreaView, ScrollView, useWindowDimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
+import { mvs } from 'react-native-size-matters';
 import { useTheme } from 'react-native-paper';
 import { useSelector } from 'react-redux';
+import React from 'react';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
@@ -38,16 +39,19 @@ const InfoScreen = ({ route }) => {
   // ----------------------- RENDERERS ----------------------- //
   return (
     <ScrollView style={styles.container}>
-      <RenderHtml
-        source={{ uri }}
-        contentWidth={width}
-        tagsStyles={{
-          body: {
-            lineHeight: 19,
-            color: theme.dark ? theme.colors.white : theme.colors.black,
-          },
-        }}
-      />
+      <SafeAreaView>
+        <RenderHtml
+          source={{ uri }}
+          contentWidth={width}
+          tagsStyles={{
+            body: {
+              ...theme.fonts.bodyMedium,
+              paddingBottom: mvs(50),
+              color: theme.dark ? theme.colors.white : theme.colors.black,
+            },
+          }}
+        />
+      </SafeAreaView>
     </ScrollView>
   );
 };

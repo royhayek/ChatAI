@@ -3,12 +3,13 @@
 // ------------------------------------------------------------ //
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
-import { Platform, TouchableOpacity, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import { TouchableOpacity, View } from 'react-native';
+import { ms } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
+import { useSelector } from 'react-redux';
 import PT from 'prop-types';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
@@ -22,11 +23,11 @@ import Pie from './Pie';
 // ------------------------------------------------------------ //
 import { getConfiguration, getDeviceUuid, getMessagesCount } from 'app/src/redux/selectors';
 import { REWARDED_AD_UNIT_ID } from 'app/src/config/constants';
+import { increment, ref, update } from 'firebase/database';
+import { FIREBASE_DB } from 'app/firebaseConfig';
 import { appName } from 'app/src/helpers';
 import { t } from 'app/src/config/i18n';
 import makeStyles from './styles';
-import { increment, ref, update } from 'firebase/database';
-import { FIREBASE_DB } from 'app/firebaseConfig';
 // ------------------------------------------------------------ //
 // ------------------------- COMPONENT ------------------------ //
 // ------------------------------------------------------------ //
@@ -56,9 +57,7 @@ const Usage = ({ open, onClose }) => {
   const [loadedAd, setLoadedAd] = useState(false);
 
   const availableMsgsCount = useMemo(() => dailyMessagesLimit - messagesCount, [dailyMessagesLimit, messagesCount]);
-  const snapPoints = useMemo(() => {
-    return [availableMsgsCount > 0 ? (Platform.OS === 'android' ? '65%' : '55%') : Platform.OS === 'android' ? '68%' : '58%'];
-  }, [availableMsgsCount]);
+  const snapPoints = useMemo(() => [availableMsgsCount > 0 ? '55%' : '58%'], [availableMsgsCount]);
   // ----------------------- /STATICS ------------------------ //
   // --------------------------------------------------------- //
 
@@ -132,14 +131,14 @@ const Usage = ({ open, onClose }) => {
   // --------------------------------------------------------- //
   // ----------------------- RENDERERS ----------------------- //
   const renderCloseIcon = useCallback(
-    () => <Ionicons name="md-close" size={25} color={theme.dark ? theme.colors.white : theme.colors.black} />,
+    () => <Ionicons name="md-close" size={ms(25)} color={theme.dark ? theme.colors.white : theme.colors.black} />,
     [theme.colors.black, theme.colors.white, theme.dark],
   );
 
   return (
     <>
       <TouchableOpacity onPress={handleOnPress}>
-        <Pie radius={16} activeStrokeWidth={7} inActiveStrokeWidth={6} />
+        <Pie radius={ms(16)} activeStrokeWidth={ms(7)} inActiveStrokeWidth={ms(6)} />
       </TouchableOpacity>
 
       <CustomBottomSheet sheetRef={bottomSheetRef} snapPoints={snapPoints} onClose={handleSheetClose}>
@@ -147,10 +146,10 @@ const Usage = ({ open, onClose }) => {
           <Text variant="titleMedium" style={styles.bottomSheetTitle}>
             {_t('daily_free_usage')}
           </Text>
-          <IconButton size={22} rippleColor="transparent" style={styles.closeButton} onPress={handleSheetClose} icon={renderCloseIcon} />
+          <IconButton size={ms(22)} rippleColor="transparent" style={styles.closeButton} onPress={handleSheetClose} icon={renderCloseIcon} />
         </View>
         <View style={styles.bottomSheetContent}>
-          <Pie hasSuffix radius={58} activeStrokeWidth={15} inActiveStrokeWidth={14} />
+          <Pie hasSuffix radius={ms(58)} activeStrokeWidth={ms(15)} inActiveStrokeWidth={ms(14)} />
           <View style={styles.freeMessagesTextBg}>
             <Text variant="labelMedium" style={styles.availableMsgs}>
               {availableMsgsCount > 0 ? _t('free_messages_daily', { name: appName, number: 5 }) : _t('hit_limit')}

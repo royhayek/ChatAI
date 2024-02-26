@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
@@ -9,14 +10,14 @@ export default theme =>
       justifyContent: 'center',
     },
     listContent: loading => ({
-      paddingTop: loading ? 50 : 0,
+      paddingTop: loading ? mvs(50) : 0,
     }),
-    loadingText: { marginTop: 20 },
+    loadingText: { marginTop: mvs(20) },
     fab: {
-      right: 24,
-      bottom: 16,
       opacity: 0.4,
-      borderRadius: 100,
+      right: ms(24),
+      bottom: mvs(16),
+      borderRadius: ms(100),
       position: 'absolute',
       backgroundColor: theme.dark ? theme.colors.black : theme.colors.white,
     },

@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
@@ -15,15 +16,15 @@ export default theme =>
       textAlign: 'center',
     },
     bottomSheetContent: {
-      marginVertical: 40,
+      marginVertical: mvs(40),
       alignItems: 'center',
     },
     closeButton: { position: 'absolute' },
     freeMessagesTextBg: {
       width: '90%',
-      padding: 15,
-      marginTop: 20,
-      borderRadius: 10,
+      padding: ms(15),
+      marginTop: mvs(20),
+      borderRadius: ms(10),
       alignItems: 'center',
       backgroundColor: theme.dark ? theme.colors.backdrop : theme.colors.lightGray,
     },
@@ -33,11 +34,11 @@ export default theme =>
     },
     earnButton: {
       width: '90%',
-      marginTop: 15,
+      marginTop: mvs(15),
     },
     playLottie: {
-      marginRight: 8,
-      height: 25,
+      marginRight: ms(8),
+      height: mvs(25),
       transform: [{ scale: 1.1 }],
     },
   });

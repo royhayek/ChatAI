@@ -1,11 +1,11 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
+import { ActivityIndicator, IconButton, Text, useTheme } from 'react-native-paper';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Image, RefreshControl, View } from 'react-native';
-import { ActivityIndicator, IconButton, Text, useTheme } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { Octicons } from '@expo/vector-icons';
+import { Ionicons, Octicons } from '@expo/vector-icons';
+import { ms } from 'react-native-size-matters';
 // ------------------------------------------------------------ //
 // ------------------------ COMPONENTS ------------------------ //
 // ------------------------------------------------------------ //
@@ -61,12 +61,12 @@ const HistoryScreen = ({ navigation }) => {
   }, [handleSheetClose, refreshConversations]);
 
   const renderDeleteIcon = useCallback(
-    () => conversations.length > 0 && <Octicons name="trash" size={22} color={theme.dark ? theme.colors.white : theme.colors.black} />,
+    () => conversations.length > 0 && <Octicons name="trash" size={ms(22)} color={theme.dark ? theme.colors.white : theme.colors.black} />,
     [conversations.length, theme.colors.black, theme.colors.white, theme.dark],
   );
 
   const renderHeaderRight = useCallback(
-    () => <IconButton size={22} onPress={handleDeletePress} icon={renderDeleteIcon} />,
+    () => <IconButton size={ms(22)} onPress={handleDeletePress} icon={renderDeleteIcon} />,
     [handleDeletePress, renderDeleteIcon],
   );
   // ---------------------- /CALLBACKS ----------------------- //
@@ -140,9 +140,13 @@ const HistoryScreen = ({ navigation }) => {
           <RegularButton
             title={_t('delete')}
             onPress={handleDeleteAllHistory}
-            startIcon={<Octicons name="trash" size={18} color={theme.colors.white} />}
+            startIcon={<Octicons name="trash" size={ms(18)} color={theme.colors.white} />}
           />
-          <RegularButton title={_t('cancel')} startIcon={<Ionicons name="close" size={18} color={theme.colors.white} />} onPress={handleSheetClose} />
+          <RegularButton
+            title={_t('cancel')}
+            startIcon={<Ionicons name="close" size={ms(18)} color={theme.colors.white} />}
+            onPress={handleSheetClose}
+          />
         </View>
       </CustomBottomSheet>
     ),

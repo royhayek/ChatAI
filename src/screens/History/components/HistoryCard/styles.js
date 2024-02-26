@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
     container: {
-      padding: 10,
-      borderWidth: 1,
-      borderRadius: 8,
-      marginBottom: 15,
+      padding: ms(10),
+      borderWidth: ms(1),
+      borderRadius: ms(8),
+      marginBottom: mvs(15),
       alignItems: 'center',
       flexDirection: 'row',
       borderColor: theme.colors.secondary,
@@ -14,18 +15,18 @@ export default theme =>
     },
     content: {
       flex: 1,
-      marginStart: 12,
-      marginEnd: 4,
+      marginStart: ms(12),
+      marginEnd: ms(4),
     },
     title: {
       color: theme.dark ? theme.colors.white : theme.colors.black,
     },
     assistant: {
-      marginVertical: 3,
+      marginVertical: mvs(3),
       color: theme.colors.primary,
     },
     date: {
-      marginTop: 2,
+      marginTop: mvs(2),
       color: theme.colors.secondary,
     },
   });

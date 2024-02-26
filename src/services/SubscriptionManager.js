@@ -47,8 +47,8 @@ const SubscriptionManager = () => {
       const purchases = await getAvailablePurchases();
       const lastPurchase = _.last(purchases);
       updateOwnedSubscription(lastPurchase?.productId);
-      console.debug('[PURCHASE HISTORY] :: ', { history });
-      console.debug('[AVAILABLE PURCHASES] :: ', { purchases });
+      console.info('[Purchase History] :: ', { history });
+      console.info('[Avaiable Purchases] :: ', { purchases });
     } catch (error) {
       console.error('[fetchAvailablePurchases] - ERROR :: ', error);
     }
@@ -59,64 +59,66 @@ const SubscriptionManager = () => {
   // --------------------------------------------------------- //
   // ----------------------- EFFECTS ------------------------- //
   useEffect(() => {
-    setup({ storekitMode: 'STOREKIT2_MODE' });
+    if ((Platform.OS === 'android' && config?.productIds?.android) || (Platform.OS === 'ios' && config?.productIds?.ios)) {
+      setup({ storekitMode: 'STOREKIT2_MODE' });
 
-    // Initialize the InAppPurchase module
-    initConnection()
-      .then(async () => {
-        if (isAndroid) {
-          await flushFailedPurchasesCachedAsPendingAndroid();
-        } else {
-          __DEV__ && (await clearTransactionIOS());
-        }
+      // Initialize the InAppPurchase module
+      initConnection()
+        .then(async () => {
+          if (isAndroid) {
+            await flushFailedPurchasesCachedAsPendingAndroid();
+          } else {
+            __DEV__ && (await clearTransactionIOS());
+          }
 
-        fetchAvailablePurchases();
+          fetchAvailablePurchases();
 
-        // Load available products (subscription plans) from the app stores
-        const productIds = Platform.select({
-          android: config?.productIds?.android,
-          ios: config?.productIds?.ios,
+          // Load available products (subscription plans) from the app stores
+          const productIds = Platform.select({
+            android: config?.productIds?.android,
+            ios: config?.productIds?.ios,
+          });
+          return getSubscriptions({ skus: productIds });
+        })
+        .then(subscriptions => {
+          // Here you can store the available subscription plans in your state or Redux store
+          console.log('Available Subscription Plans:', subscriptions);
+
+          updateSubscriptions(subscriptions);
+        })
+        .catch(error => {
+          console.error('Error setting up subscriptions:', error);
         });
-        return getSubscriptions({ skus: productIds });
-      })
-      .then(subscriptions => {
-        // Here you can store the available subscription plans in your state or Redux store
-        console.log('Available Subscription Plans:', subscriptions);
 
-        updateSubscriptions(subscriptions);
-      })
-      .catch(error => {
-        console.error('Error setting up subscriptions:', error);
+      const purchaseUpdate = purchaseUpdatedListener(async purchase => {
+        const receipt = purchase.transactionReceipt ? purchase.transactionReceipt : purchase.originalJson;
+
+        if (receipt) {
+          try {
+            const acknowledgeResult = await finishTransaction({ purchase });
+            console.info('acknowledgeResult', acknowledgeResult);
+          } catch (error) {
+            console.debug('finishTransaction', error);
+          }
+
+          const parsedReceipt = JSON.parse(receipt);
+          console.debug('[RECEIPT AFTER PURCHASE] :: ', parsedReceipt);
+          updateOwnedSubscription(parsedReceipt.productId);
+        }
       });
 
-    const purchaseUpdate = purchaseUpdatedListener(async purchase => {
-      const receipt = purchase.transactionReceipt ? purchase.transactionReceipt : purchase.originalJson;
+      const purchaseError = purchaseErrorListener(error => console.info('[Product promoted] :: ', { error: JSON.stringify(error) }));
 
-      if (receipt) {
-        try {
-          const acknowledgeResult = await finishTransaction({ purchase });
-          console.info('acknowledgeResult', acknowledgeResult);
-        } catch (error) {
-          console.debug('finishTransaction', error);
-        }
+      const promotedProduct = promotedProductListener(productId => console.info('[Product promoted] :: ', { productId }));
 
-        const parsedReceipt = JSON.parse(receipt);
-        console.debug('[RECEIPT AFTER PURCHASE] :: ', parsedReceipt);
-        updateOwnedSubscription(parsedReceipt.productId);
-      }
-    });
+      return () => {
+        purchaseUpdate?.remove();
+        purchaseError?.remove();
+        promotedProduct?.remove();
 
-    const purchaseError = purchaseErrorListener(error => console.info('[Product promoted] :: ', { error: JSON.stringify(error) }));
-
-    const promotedProduct = promotedProductListener(productId => console.info('[Product promoted] :: ', { productId }));
-
-    return () => {
-      purchaseUpdate?.remove();
-      purchaseError?.remove();
-      promotedProduct?.remove();
-
-      endConnection();
-    };
+        endConnection();
+      };
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config?.productIds?.android, config?.productIds?.ios]);
   // ----------------------- /EFFECTS ------------------------ //

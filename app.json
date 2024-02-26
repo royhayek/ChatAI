@@ -2,7 +2,7 @@
   "expo": {
     "name": "ChatAI",
     "slug": "ChatAI",
-    "version": "1.0.7",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,11 +11,14 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.codeblow.chatai",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,12 +26,15 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.codeblow.chatai",
-      "versionCode": "8",
+      "versionCode": 10,
       "runtimeVersion": "exposdk:44.0.0",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     },
     "extra": {
       "eas": {

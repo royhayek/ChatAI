@@ -1,9 +1,8 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NativeModules, ScrollView, TouchableOpacity, View } from 'react-native';
-import { getPurchaseHistoryAsync } from 'expo-in-app-purchases';
 import { requestSubscription } from 'react-native-iap';
 import { useTheme, Text, Badge } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
@@ -72,20 +71,18 @@ const SubscriptionScreen = ({ navigation }) => {
     }
   };
 
-  const getHistory = useCallback(async () => {
-    const history = await getPurchaseHistoryAsync();
-    console.debug('history in subscriptions', history);
-  }, []);
   // ---------------------- /CALLBACKS ----------------------- //
   // --------------------------------------------------------- //
 
   // --------------------------------------------------------- //
   // ------------------------ EFFECTS ------------------------ //
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
-    getHistory();
-    !_.isEmpty(subscriptions) && _.isEmpty(selectedPlan) && setSelectedPlan(_.first(_.first(subscriptions)?.subscriptionOfferDetails));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    !_.isEmpty(subscriptions) &&
+      _.isEmpty(selectedPlan) &&
+      setSelectedPlan({ ..._.first(_.first(subscriptions)?.subscriptionOfferDetails), productId: _.first(subscriptions).productId });
   }, [subscriptions, selectedPlan]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     ownedSubscription && subscribed && navigation.goBack();
@@ -121,14 +118,14 @@ const SubscriptionScreen = ({ navigation }) => {
       <View style={styles.plansContainer}>
         {_.map(subscriptions, subscription => {
           const subscriptionOfferDetails = _.first(subscription.subscriptionOfferDetails);
-          const isSelected = _.isEqual(selectedPlan, subscriptionOfferDetails);
-          const isOwned = _.isEqual(ownedSubscription, subscriptionOfferDetails?.basePlanId);
+          const isSelected = _.isEqual(selectedPlan?.basePlanId, subscriptionOfferDetails?.basePlanId);
+          const isOwned = ownedSubscription && _.isEqual(ownedSubscription, subscription?.productId);
           const pricingPhase = _.first(subscriptionOfferDetails.pricingPhases.pricingPhaseList);
           return (
             <TouchableOpacity
               disabled={isOwned}
               key={subscriptionOfferDetails?.basePlanId}
-              onPress={() => setSelectedPlan(subscriptionOfferDetails)}
+              onPress={() => setSelectedPlan({ ...subscriptionOfferDetails, productId: subscription.productId })}
               style={styles.planContainer(isSelected, isOwned)}>
               <Text variant="bodyMedium" style={styles.planTitle}>
                 {_t(pricingPhase.billingPeriod)}
@@ -136,11 +133,13 @@ const SubscriptionScreen = ({ navigation }) => {
               <Text variant="bodyLarge" style={styles.planPrice}>
                 {pricingPhase.formattedPrice} {/* /{plan?.unit} */}
               </Text>
-              <Badge style={styles.ownBadge}>
-                <Text variant="labelSmall" style={styles.badgeText}>
-                  {_t('you_own_this_plan')}
-                </Text>
-              </Badge>
+              {isOwned && (
+                <Badge style={styles.ownBadge}>
+                  <Text variant="labelSmall" style={styles.badgeText}>
+                    {_t('you_own_this_plan')}
+                  </Text>
+                </Badge>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -170,7 +169,11 @@ const SubscriptionScreen = ({ navigation }) => {
         </Text>
         {renderBenefits}
         {!_.isEmpty(subscriptions) ? renderSubscriptionsList : renderEmptySubscriptions}
-        <RegularButton title={t('common.continue')} onPress={handleBuySubscription} disabled={_.isEmpty(subscriptions)} />
+        <RegularButton
+          title={t('common.continue')}
+          onPress={handleBuySubscription}
+          disabled={_.isEmpty(subscriptions) || _.isEqual(ownedSubscription, selectedPlan?.productId)}
+        />
         <Text variant="bodySmall" style={styles.cancelText}>
           {_t('cancel_anytime')}
         </Text>

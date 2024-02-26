@@ -1,14 +1,15 @@
 import { StyleSheet } from 'react-native';
+import { ms, mvs } from 'react-native-size-matters';
 
 export default theme =>
   StyleSheet.create({
     container: disabled => ({
-      marginTop: 20,
+      marginTop: mvs(20),
       opacity: disabled ? 0.5 : 1,
     }),
     linearBackground: {
-      padding: 12,
-      borderRadius: 10,
+      padding: ms(12),
+      borderRadius: ms(10),
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -16,9 +17,9 @@ export default theme =>
     title: {
       color: theme.colors.white,
       fontWeight: 'bold',
-      paddingHorizontal: 3,
+      paddingHorizontal: ms(3),
     },
     endIcon: {
-      marginHorizontal: 8,
+      marginHorizontal: ms(8),
     },
   });

@@ -1,18 +1,20 @@
 // ------------------------------------------------------------ //
 // ------------------------- PACKAGES ------------------------- //
 // ------------------------------------------------------------ //
-import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Menu, Switch, Text, useTheme } from 'react-native-paper';
+import React, { useCallback, useMemo, useState } from 'react';
+// import Rate, { AndroidMarket } from 'react-native-rate';
 import { getAvailablePurchases } from 'react-native-iap';
-import Rate, { AndroidMarket } from 'react-native-rate';
 import { useDispatch, useSelector } from 'react-redux';
+import * as StoreReview from 'expo-store-review';
+import { ms } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
 import _ from 'lodash';
 // ------------------------------------------------------------ //
 // ------------------------- UTILITIES ------------------------ //
 // ------------------------------------------------------------ //
-import { getConfiguration, getLanguage, getOwnedSubscription, getThemeMode } from 'app/src/redux/selectors';
+import { getLanguage, getOwnedSubscription, getThemeMode } from 'app/src/redux/selectors';
 import { setLanguage, setOwnedSubscription, setThemeMode } from '../../redux/slices/appSlice';
 import { changeLanguage, isRTL, t } from '../../config/i18n';
 import { Languages } from 'app/src/config/constants';
@@ -30,7 +32,6 @@ const SettingsScreen = ({ navigation }) => {
   const updateOwnedSubscription = useCallback(payload => dispatch(setOwnedSubscription(payload)), [dispatch]);
 
   const ownedSubscription = useSelector(getOwnedSubscription);
-  const config = useSelector(getConfiguration);
   const themeMode = useSelector(getThemeMode);
   const language = useSelector(getLanguage);
   // ----------------------- /REDUX -------------------------- //
@@ -71,7 +72,7 @@ const SettingsScreen = ({ navigation }) => {
     [dispatch, toggleLangMenu],
   );
 
-  const handleUpgradePress = useCallback(() => navigation.navigate('Subscription'), []);
+  const handleUpgradePress = useCallback(() => navigation.navigate('Subscription'), [navigation]);
 
   const handleRestorePurchase = useCallback(async () => {
     try {
@@ -89,25 +90,41 @@ const SettingsScreen = ({ navigation }) => {
     }
   }, [updateOwnedSubscription]);
 
-  const handleRateApp = useCallback(() => {
-    const options = {
-      AppleAppID: config?.other?.appleAppId,
-      GooglePackageName: config?.other?.googlePackageName,
-      preferredAndroidMarket: AndroidMarket.Google,
-      preferInApp: true,
-      openAppStoreIfInAppFails: true,
-    };
-    Rate.rate(options, (success, errorMessage) => {
-      if (success) {
-        // This technically only tells us if the user successfully went to the Review Page. Whether they actually did anything, we do not know.
-        console.debug('User successfully rated the app');
-      }
-      if (errorMessage) {
-        // errorMessage comes from the native code. Useful for debugging, but probably not for users to view
-        console.error(`Example page Rate.rate() error: ${errorMessage}`);
-      }
-    });
-  }, [config?.other?.appleAppId, config?.other?.googlePackageName]);
+  const handleRateApp = useCallback(async () => {
+    //   const options = {
+    //     appleAppID: config?.other?.appleAppId,
+    //     googlePackageName: config?.other?.googlePackageName,
+    //     // preferredAndroidMarket: AndroidMarket.Google,
+    //     // preferInApp: true,
+    //     // openAppStoreIfInAppFails: true,
+    //   };
+    //   // Rate.rate(options, (success, errorMessage) => {
+    //   //   if (success) {
+    //   //     // This technically only tells us if the user successfully went to the Review Page. Whether they actually did anything, we do not know.
+    //   //     console.debug('User successfully rated the app');
+    //   //   }
+    //   //   if (errorMessage) {
+    //   //     // errorMessage comes from the native code. Useful for debugging, but probably not for users to view
+    //   //     console.error(`Example page Rate.rate() error: ${errorMessage}`);
+    //   //   }
+
+    //   // if (Platform.OS === 'ios') {
+    //   //   Linking.openURL(`itms-apps://itunes.apple.com/app/viewContentsUserReviews/id${options.appleAppID}?action=write-review`);
+    //   // } else {
+    //   //   Linking.openURL(`market://details?id=${options.googlePackageName}&showAllReviews=true`);
+    //   // }
+
+    if (StoreReview.isAvailableAsync()) {
+      await StoreReview.requestReview()
+        .then(function (response) {
+          console.log('[handleRateApp] :: ', { response });
+          console.debug('User successfully rated the app');
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    }
+  }, []);
 
   const toggleThemeMode = useCallback(() => dispatch(setThemeMode(isDark ? 'light' : 'dark')), [dispatch, isDark]);
   // ---------------------- /CALLBACKS ----------------------- //
@@ -199,9 +216,11 @@ const SettingsScreen = ({ navigation }) => {
           <Text variant="bodyLarge" style={styles.upgradeTitle}>
             {_t('upgrade_to_plus')}
           </Text>
-          <Text style={styles.upgradeDesc}> {_t('expanded_access', { name: appName })}</Text>
+          <Text variant="bodySmall" style={styles.upgradeDesc}>
+            {_t('expanded_access', { name: appName })}
+          </Text>
         </View>
-        <Ionicons name="ios-chevron-forward-sharp" size={28} color="white" style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }} />
+        <Ionicons name="ios-chevron-forward-sharp" size={ms(28)} color="white" style={{ transform: isRTL ? [{ scaleX: -1 }] : undefined }} />
       </TouchableOpacity>
     ),
     [handleUpgradePress, styles.upgradeContainer, styles.upgradeDesc, styles.upgradeTitle],
@@ -219,11 +238,11 @@ const SettingsScreen = ({ navigation }) => {
               {_.map(items, ({ key, icon, name, value, onPress, isSwitch, isMenu }) => (
                 <TouchableOpacity key={key} style={styles.item} onPress={onPress}>
                   <View style={styles.iconAndTitle}>
-                    <Ionicons name={icon} size={24} style={styles.endIcon} />
+                    <Ionicons name={icon} size={ms(24)} style={styles.endIcon} />
                     <Text variant="labelLarge">{name}</Text>
                   </View>
                   {isSwitch ? (
-                    <Switch value={value} onValueChange={onPress} style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }} />
+                    <Switch value={value} onValueChange={onPress} style={{ transform: [{ scaleX: ms(0.8) }, { scaleY: ms(0.8) }] }} />
                   ) : isMenu ? (
                     <Menu
                       visible={openLangMenu}
@@ -232,10 +251,10 @@ const SettingsScreen = ({ navigation }) => {
                       contentStyle={styles.languageMenuContent}
                       anchor={
                         <View style={styles.anchor}>
-                          <Text>{value}</Text>
+                          <Text variant="bodySmall">{value}</Text>
                           <Ionicons
                             name="chevron-forward"
-                            size={18}
+                            size={ms(18)}
                             style={styles.arrowIcon}
                             color={theme.dark ? theme.colors.white : theme.colors.black}
                           />
@@ -248,7 +267,7 @@ const SettingsScreen = ({ navigation }) => {
                   ) : (
                     <Ionicons
                       name="chevron-forward"
-                      size={18}
+                      size={ms(18)}
                       style={styles.arrowIcon}
                       color={theme.dark ? theme.colors.white : theme.colors.black}
                     />

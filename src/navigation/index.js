@@ -4,6 +4,7 @@
 import React, { useCallback } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { ms, mvs } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
 // ------------------------------------------------------------ //
@@ -102,7 +103,7 @@ const RootNavigation = () => {
     }
 
     // You can return any component that you like here!
-    return <Ionicons name={iconName} size={size} color={color} />;
+    return <Ionicons name={iconName} size={ms(size)} color={color} />;
   }, []);
 
   const Tabs = () => (
@@ -111,14 +112,17 @@ const RootNavigation = () => {
         tabBarStyle: {
           elevation: 0,
           borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? mvs(75) : mvs(60),
           backgroundColor: theme.colors.background,
         },
         tabBarHideOnKeyboard: true,
         tabBarAllowFontScaling: true,
         headerShown: false,
+        tabBarLabelStyle: { fontSize: theme.fonts.bodySmall.fontSize },
         tabBarIcon: props => getTabBarIcon(props, route),
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.secondary,
+        tabBarItemStyle: { marginVertical: Platform.OS === 'ios' ? 0 : mvs(8), marginTop: Platform.OS === 'ios' ? mvs(4) : 0 },
       })}>
       <Tab.Screen name="ChatStack" component={ChatStackScreen} options={{ title: _t('chat') }} />
       <Tab.Screen name="HistoryStack" component={HistoryStackScreen} options={{ title: _t('history'), unmountOnBlur: true }} />

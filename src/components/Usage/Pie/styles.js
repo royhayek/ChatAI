@@ -1,8 +1,9 @@
+import { scaledFontSize } from 'app/src/helpers';
 import { StyleSheet } from 'react-native';
 
 export default theme =>
   StyleSheet.create({
     valueText: {
-      fontSize: 16,
+      fontSize: scaledFontSize(16),
     },
   });
